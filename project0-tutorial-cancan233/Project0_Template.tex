@@ -170,11 +170,13 @@ Please cite a source. Extra credit for unique examples!
 
 \begin{enumerate}[(a)]
 
-\item I want to have the superpower that can help me see virtual (Augmented reality)
+\item The superpower related to computer vision that I want to possess is augmented reality, which means that I could see virtual things in real life.
 
-\item
+\item There are many ways I want to use my superpower. One simple example is that I could try those online clothes at home without going to the local stores. This is extremely helpful, especially in epidemic time like now. Another example can be playing video games. Augmented reality will greatly increase the fun.
 
-\item
+\item One controversial real world use of computer vision could be the facial-recognition technique. It is reported that in June 2020, IBM, Amazon and Microsoft announced sweeping restrictions on their sale of facial recognition tools and called for federal regulation amid protests across the United States against police violence and racial profiling. Facial recognition can help police identify known or suspected terrorists, especially in crowded places, reducing the chances of racial profiling. In the meantime, it also brings the concern that the data might be used without consent. Because it can be used for good reasons and can be used for bad purposes, it makes facial recognition a controversial application of computer vision in real world.
+
+(source: https://www.nbcnews.com/tech/security/big-tech-juggles-ethical-pledges-facial-recognition-corporate-interests-n1231778)
 
 \end{enumerate}
 
@@ -204,8 +206,18 @@ How could we convert it to handle color images using another for loop? Please in
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A3.1:} Your written answer here. (1-2 sentences)
+To handle color images, we have to add a for loop that loops over the each channels seperately. So we modify two places. The first one is adding one dimension to the image shape. The second one is add one for loop over the number of channels.
 \begin{python}
 # Your code goes here
+from skimage import io
+
+A = io.imread('grizzlypeak.jpg')
+(height,width, channels) = A.shape
+for i in range(height):
+    for j in range(width):
+        for k in range(channels):
+            if A[i,j,k] <= 50 :
+                A[i,j,k] = 0
 \end{python}
 
 
@@ -230,12 +242,21 @@ How could we convert it to handle color images using another for loop? Please in
 
 (a) Your written answer here. (1-2 sentences)
 
+The execution time for a single image is 14.9 seconds.
+
 (b) 
 \begin{python}
 # Your code goes here
+from skimage import io
+import numpy as np
+
+A = io.imread('grizzlypeak.jpg')
+A = np.array(A)
+B = A <= 50
+A[B] = 0
 \end{python}
 
-(c) 
+(c) The execution time for the faster code is 0.014 second for a single image. It is more than 1000$\times$ faster than the previous version.
 
 \pagebreak{A3.2:} (Extra Space)
 
@@ -263,16 +284,29 @@ What is incorrect with this approach? How can it be fixed while maintaining the 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A4:} Your written answer here. (2-3 sentences)
+
+There are two possible errors here. The first one is resulted from astype. The built-in scikit-image processing functions assume that the image is normalized in 0..1 if the image is in float-point format. But astype(np.float32) won't normalize the image. The second one is resulted from the possible negative values by substracting 50 for each pixels. The valid range for imshow with RGB data is [0..255] for integers.
+
 \begin{python}
 # Your code goes here
+from skimage import io
+import matplotlib.pyplot as plt
+import numpy as np
+
+I =  io.imread('gigi.jpg').astype(np.uint8)
+I[I <= 50] = 0
+I[I > 50] -= 50
+plt.imshow(I)
+plt.show()
 \end{python}
 
-Result image here:
+Result image here: Please see the next page.
 % Example image inclusion; replace with your result image:
-% \includegraphics[width=\textwidth]{your_image_here.jpg}
 
 \pagebreak
 \paragraph{A4:} (Extra Space)
+
+\includegraphics[scale=0.1]{modified_gigi.jpg}
 
 
 
@@ -326,11 +360,24 @@ Do we now see the correct output?
 \paragraph{A5.1: } (a) Re-execute the debugger, and capture a screenshot showing your use of the Debug Console and inspection of a variable. Please include it below.
 
 % Example image inclusion; replace with your result image:
-% \includegraphics[width=\textwidth]{your_image_here.jpg}
+\includegraphics[width=\textwidth]{debug.png}
 
 (b) Describe what caused the bug. You can write the corrected lines as your answer below.
+
+The error here is that the mathematical operation to obtain startCropX and startCropY is not modulus but floor division.
 \begin{python}
 # Put the correct code here.
+from skimage import io
+import matplotlib.pyplot as plt
+
+origImage = io.imread('gigi.jpg')
+(height, width, channels) = origImage.shape
+startCropX = width // 2
+startCropY = height // 2
+croppedImage = origImage[startCropY:, startCropX:]
+
+plt.imshow(croppedImage)
+plt.show()
 \end{python}
 
 
@@ -371,15 +418,31 @@ Run the code in a debugging session, note the exception, and inspect the variabl
 (a) Please include an image of your debugging session here.
 
 % Example image inclusion; replace with your result image:
-% \includegraphics[width=\textwidth]{gigi.jpg}
+The error here is that the result of np.transpose(mat\_2) is not passed to mat\_2 so that the shape of mat\_2 is still the same as the shape of mat\_1.
+
+Please check the next page for the screenshot.
 
 (b) Describe what caused the bug. You can write the corrected lines as your answer below.
+
 \begin{python}
-# Put the correct code here.
+    # Put the correct code here.
+    import numpy as np
+    from numpy import random as r
+    
+    mat_1 = r.rand(200,150)
+    mat_2 = mat_1
+    mat_2 = np.transpose(mat_2)
+    mat_3 = np.matmul(mat_1, mat_2)
+    mat_max = np.max(mat_3)
+    
+    print("Max value:", mat_max)
 \end{python}
 
 
 % Please leave the pagebreak
 \pagebreak
 \paragraph{A5.2} (Extra space)
+
+\includegraphics[width=\textwidth]{matrix_debug.png}
+
 \end{document}
