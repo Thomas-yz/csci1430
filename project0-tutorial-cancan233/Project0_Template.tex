@@ -249,11 +249,17 @@ The execution time for a single image is 14.9 seconds.
 # Your code goes here
 from skimage import io
 import numpy as np
+import time
 
 A = io.imread('grizzlypeak.jpg')
 A = np.array(A)
-B = A <= 50
-A[B] = 0
+start = time.time()
+# This will measure the excution time for 1000 images
+for m in range(1000):
+    B = A <= 50
+    A[B] = 0
+end = time.time()
+print(end - start)
 \end{python}
 
 (c) The execution time for the faster code is 0.014 second for a single image. It is more than 1000$\times$ faster than the previous version.
