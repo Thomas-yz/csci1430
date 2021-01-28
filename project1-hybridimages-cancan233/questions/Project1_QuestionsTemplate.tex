@@ -55,6 +55,7 @@
 \usepackage[shortlabels]{enumitem}
 \setlist[enumerate]{topsep=0pt}
 \usepackage{amsmath}
+\usepackage{subfig}
 
 % a great python code format: https://github.com/olivierverdier/python-latex-highlighting
 \usepackage{pythonhighlight}
@@ -109,15 +110,15 @@
 \paragraph{A1:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
-% \item 
-% \begin{enumerate}[(i)]
-%     \item 
-%     \item 
-%     \item 
-% \end{enumerate}
-% \item 
-% \end{enumerate}
+\begin{enumerate}[(a)]
+  \item  
+\begin{enumerate}[(i)]
+  \item Input is the image $I$ of size m $\times$ n 
+  \item Transformation is the filter $f$ of size k $\times$ l
+  \item output is the same size as image but with form of $\sum_{k,l} f[k,l]I[m-k, n-l]$
+\end{enumerate}
+  \item Because image convolution allows us to learn which features in pictures that provide useful information in images. It also allows us to enhance images (e.g. increase contrast, fake tilt shift) and detect patterns.
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -140,13 +141,31 @@
 \paragraph{A2:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+\item The difference between convolution and correlation is the operation symbol before the filter element, where convolution is minus and correlation is plus. (See the equations for 2d correlation and 2d convolution below). The convolution filter is flipped by 180 degrees. If the filter kernel is symmetric, correlation and convolution are identical.
+\begin{equation*}
+	h[m, n] = \sum_{k,l}f[k,l]I[m+k, n+l] \text{2d correlation} \\
+	h[m, n] = \sum_{k,l}f[k,l]I[m-k, n-l] \text{2d convolution}
+\end{equation*}
 
-% \item 
+\item As long as the filter is nonsymmetric, the output between convolution and correlation is different. Here I use the '../data/fish.bmp' as an example. The input image, filter and output images are shown  below. The code to obtain the results is attahced at last page. \\
+First I read the image into grayscale for sake of simplicity. As brightness in image increases, the response in output will increase. Overall brighter regions will give higher correlation response. To avoid this, the mean is substracted for both input image and filter. \\
+In the output of correlation, the rigion is bright where the filter is similar to the input image. Thus, we can see that correlation output is bright around the eye of the fish because the filter is the eye of the fish. And for the output of convolution, because the different operation of filter applied to the input image, the result is contrast to the output of correlation.
 
-% \end{enumerate}
+\begin{figure*}[htbp]
+	\centering
+	\subfloat[\centering fish input image (scaled to 0.25)]{{\includegraphics[scale=0.25]{fish.png}}} %
+	\qquad
+	\subfloat[\centering filter image]{{\includegraphics[]{filter_fish.png}}} %
+	\qquad
+	\subfloat[\centering Correlate2d output image (scaled to 0.25)]{{\includegraphics[scale=0.25]{correlate2d_fish.png}}}
+	\qquad
+	\subfloat[\centering Convolve2d output image (scaled to 0.25)]{{\includegraphics[scale=0.25]{convolve2d_fish.png}}}
+	
+\end{figure*}
+
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -165,7 +184,7 @@
     1 & 0 & -1 \\
  \end{bmatrix}$
 \begin{tabular}[h]{ll}
-$\square$ & High pass \\
+$\blacksquare$ & High pass \\
 $\square$ & Low pass \\
 $\square$ & Neither \\
 \end{tabular}
@@ -178,7 +197,7 @@ $\square$ & Neither \\
  \end{bmatrix}$
 \begin{tabular}[h]{ll}
 $\square$ & High pass \\
-$\square$ & Low pass \\
+$\blacksquare$ & Low pass \\
 $\square$ & Neither \\
 \end{tabular}
 
@@ -189,7 +208,7 @@ $\begin{bmatrix}
     -\frac{1}{9} & -\frac{1}{9} & -\frac{1}{9}
   \end{bmatrix}$
 \begin{tabular}[h]{ll}
-$\square$ & High pass \\
+$\blacksquare$ & High pass \\
 $\square$ & Low pass \\
 $\square$ & Neither \\
 \end{tabular}
@@ -201,14 +220,14 @@ Output image 1:\\
 \raisebox{\baselineskip-\height}{\includegraphics[width = 6cm]{q3img1.png}}
 \begin{tabular}[h]{lc}
 $\square$ & High pass \\
-$\square$ & Low pass \\
+$\blacksquare$ & Low pass \\
 \end{tabular}
 
 \item
 Output image 2:\\
 \raisebox{\baselineskip-\height}{\includegraphics[width = 6cm]{q3img2.png}}
 \begin{tabular}[h]{lc}
-$\square$ & High pass \\
+$\blacksquare$ & High pass \\
 $\square$ & Low pass \\
 \end{tabular}
 
@@ -216,7 +235,7 @@ $\square$ & Low pass \\
 Which of the following statements are true? (Check all that apply).
 
 \begin{tabular}[h]{ll}
-$\square$ & High pass filter kernels will always contain at least one negative number \\
+$\blacksquare$ & High pass filter kernels will always contain at least one negative number \\
 $\square$ & A Gaussian filter is an example of a low pass filter \\
 $\square$ & A high pass filter is the basis for most smoothing methods \\
 $\square$ & In a high pass filter, the center of the kernel must have the highest value \\
@@ -332,13 +351,13 @@ plt.show()
 \paragraph{A4:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item Add your graph as well as a brief description of what your graph demonstrates.
+\item Add your graph as well as a brief description of what your graph demonstrates.
+Below is the figure for excution time plot for convolution operation with different size of kernels and images. We can see that with the filter sizes and image sizes increaseing, the computation time increases as well.
+\item Do the results match your expectation given the number of multiply and add operations in convolution?
 
-% \item Do the results match your expectation given the number of multiply and add operations in convolution?
-
-% \end{enumerate}
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak 
@@ -425,5 +444,34 @@ illustrations than as reportage, since they can no longer distinguish between a 
 \pagebreak
 \section*{Feedback? (Optional)}
 Please help us make the course better. If you have any feedback for this assignment, we'd love to hear it!
+
+
+\pagebreak
+\section*{A2: (b) code to obtain results}
+\begin{python}
+from skimage.color import rgb2gray
+from skimage import io, color
+import matplotlib
+matplotlib.use("TkAgg")
+import matplotlib.pyplot as plt
+from scipy.signal import correlate2d, convolve2d
+import numpy as np
+
+testimg = io.imread('../data/fish.bmp')
+testimg = rgb2gray(testimg)
+# input image
+testimg2 = testimg - np.mean(testimg)
+plt.imsave('fish.png', testimg2, cmap=plt.cm.gray)
+# filter 
+f = testimg[125:175, 50:100]
+f2 = f - np.mean(f)
+plt.imsave('filter_fish.png', f2, cmap=plt.cm.gray)
+# correlate output
+I = correlate2d(testimg2, f2, 'same')
+plt.imsave('correlate2d_fish.png', I, cmap=plt.cm.gray)
+# convolve output
+I2 = convolve2d(testimg2, f2, 'same')
+plt.imsave('convolve2d_fish.png', I2, cmap=plt.cm.gray)
+\end{python}
 
 \end{document}
