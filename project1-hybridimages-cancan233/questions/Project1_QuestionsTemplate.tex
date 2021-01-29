@@ -55,7 +55,10 @@
 \usepackage[shortlabels]{enumitem}
 \setlist[enumerate]{topsep=0pt}
 \usepackage{amsmath}
-\usepackage{subfig}
+% \usepackage{subfig}
+\usepackage{caption}
+\usepackage{subcaption}
+
 
 % a great python code format: https://github.com/olivierverdier/python-latex-highlighting
 \usepackage{pythonhighlight}
@@ -145,26 +148,45 @@
 
 \item The difference between convolution and correlation is the operation symbol before the filter element, where convolution is minus and correlation is plus. (See the equations for 2d correlation and 2d convolution below). The convolution filter is flipped by 180 degrees. If the filter kernel is symmetric, correlation and convolution are identical.
 \begin{equation*}
-	h[m, n] = \sum_{k,l}f[k,l]I[m+k, n+l] \text{2d correlation} \\
-	h[m, n] = \sum_{k,l}f[k,l]I[m-k, n-l] \text{2d convolution}
+    \begin{split}
+        h[m, n] &= \sum_{k,l}f[k,l]I[m+k, n+l] \qquad \text{2d correlation} \\
+        h[m, n] &= \sum_{k,l}f[k,l]I[m-k, n-l] \qquad \text{2d convolution}
+    \end{split}
 \end{equation*}
 
-\item As long as the filter is nonsymmetric, the output between convolution and correlation is different. Here I use the '../data/fish.bmp' as an example. The input image, filter and output images are shown  below. The code to obtain the results is attahced at last page. \\
-First I read the image into grayscale for sake of simplicity. As brightness in image increases, the response in output will increase. Overall brighter regions will give higher correlation response. To avoid this, the mean is substracted for both input image and filter. \\
+\item As long as the filter is nonsymmetric, the output between convolution and correlation is different. Here I use the '../data/fish.bmp' as an example. The input image, filter and output images are shown  below. The code to obtain the results is attahced at last page. First I read the image into grayscale for sake of simplicity. As brightness in image increases, the response in output will increase. Overall brighter regions will give higher correlation response. To avoid this, the mean is substracted for both input image and filter. \\
 In the output of correlation, the rigion is bright where the filter is similar to the input image. Thus, we can see that correlation output is bright around the eye of the fish because the filter is the eye of the fish. And for the output of convolution, because the different operation of filter applied to the input image, the result is contrast to the output of correlation.
 
-\begin{figure*}[htbp]
-	\centering
-	\subfloat[\centering fish input image (scaled to 0.25)]{{\includegraphics[scale=0.25]{fish.png}}} %
-	\qquad
-	\subfloat[\centering filter image]{{\includegraphics[]{filter_fish.png}}} %
-	\qquad
-	\subfloat[\centering Correlate2d output image (scaled to 0.25)]{{\includegraphics[scale=0.25]{correlate2d_fish.png}}}
-	\qquad
-	\subfloat[\centering Convolve2d output image (scaled to 0.25)]{{\includegraphics[scale=0.25]{convolve2d_fish.png}}}
-	
-\end{figure*}
-
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[htbp]{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{fish.png}
+        \caption{fish input image: 307 $\times$ 375}
+        \label{fish}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[htbp]{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{filter_fish.png}
+        \caption{filter: 50 $\times$ 50}
+        \label{filter_fish}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[htbp]{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{correlate2d_fish.png}
+        \caption{correlate2d output image: 307 $\times$ 375}
+        \label{correlate2d_fish}
+    \end{subfigure}
+    \hfill 
+    \begin{subfigure}[htbp]{0.24\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{convolve2d_fish.png}
+        \caption{convolve2d output image: 307 $\times$ 375}
+        \label{convolve2d_fish}
+    \end{subfigure}
+\end{figure}
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,20 +299,21 @@ from skimage import io, img_as_float32
 from skimage.transform import rescale, resize
 #use to convolve/correlate image
 from scipy.ndimage import correlate
+import numpy as np
 
 #This reads in image and converts to a floating point format
 # 1) TODO - replace PATH with the actual path to the 
 #    downloaded RISDance.jpg image linked above
-image = img_as_float32(io.imread('PATH'))
+image = img_as_float32(io.imread('./RISDance.jpg'))
 
 # 2) TODO - change the image size so it starts at 8MPix 
 #    use one of the imported libraries
-original_image = 
+original_image = resize(image, (2160, 3840), anti_aliasing=True)
 
 # 3) TODO - iterate through odd numbers from 3 to 15
 #   (inclusive!!) these will represent your filter sizes
 #   (3x3,5x5,7x7, etc.), for each filter size you will...
-for kernel_size in range():
+for kernel_size in range(3, 16):
 
     #because for each loop you are resizing your image, you 
     #want to start each loop w/the original image size
@@ -307,11 +330,11 @@ for kernel_size in range():
     	#    any values, as the kernel values shouldn't 
     	#    affect computation time. The size of the kernel
     	#    must be kernel_size x kernel_size
-        kernel = 
+        kernel = np.random.rand(kernel_size, kernel_size, 1)
         
         #5) TODO - reduce your image size. You can choose by 
         # what increments to reduce your image.
-        shrinking_image = 
+        shrinking_image = rescale(shrinking_image, 0.75)
         
         #gets the current time (in seconds)
         start = time.time() 
@@ -319,15 +342,16 @@ for kernel_size in range():
         # 6) TODO - use one of the imported libraries to do 
         # your correlation/convolution on the image. You can 
         # choose which operation to perform.
-        
+        convolve(shrinking_image, kernel)
+
         
         #gets the current time (in seconds)
         end = time.time() 
         
         #7) TODO - figure out what values to append, and 
         #   append them here
-        image_sizes.append()
-        times.append()
+        image_sizes.append(shrinking_image.size)
+        times.append(end-start)
     
     #each filter size will be plotted as a separate line, in 
     #a multi-line 2-dimensional graph
@@ -353,9 +377,15 @@ plt.show()
 
 \begin{enumerate}[(a)]
 
-\item Add your graph as well as a brief description of what your graph demonstrates.
-Below is the figure for excution time plot for convolution operation with different size of kernels and images. We can see that with the filter sizes and image sizes increaseing, the computation time increases as well.
-\item Do the results match your expectation given the number of multiply and add operations in convolution?
+\item Add your graph as well as a brief description of what your graph demonstrates. \\
+The code is implemented as above. Below is the figure for excution time plot for convolution operation with different size of kernels and images. We can see that with the filter sizes and image sizes increaseing, the computation time increases as well.
+
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[scale=0.5]{A4.png}
+\end{figure*}
+\item Do the results match your expectation given the number of multiply and add operations in convolution? \\
+The number of multiply and add operations increases with the increase of kernel size and image size. As the excution time is proportional to the number of operations, it will also increase. Thus, the results match our expectation.
 
 \end{enumerate}
 
@@ -388,15 +418,15 @@ You are encouraged to test out your answers by creating your own python program,
 \paragraph{A5:} Your answer here. Remember, write \emph{one} numpy function to complete each of the tasks.
 %  Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
-% \item 
-% \item 
-% \item 
-% \item 
-% \item 
-% \item 
-% \item 
-% \end{enumerate}
+\begin{enumerate}[(a)]
+\item \begin{verbatim}np.zeros((320, 640))\end{verbatim}
+\item \begin{verbatim}np.squeeze(img, axis=(0,1))\end{verbatim}
+\item \begin{verbatim}np.expand_dims(b, axis=0)\end{verbatim}
+\item \begin{verbatim}np.clip(c, -0.5, 0.5)\end{verbatim}
+\item \begin{verbatim}img[:, :, 2]\end{verbatim}
+\item \begin{verbatim}np.stack((img[:, :, 0], img[:,:,2]), axis=2)\end{verbatim}
+\item \begin{verbatim}np.pad(img, ((2, 2), (3, 3), (0, 0)), 'constant')\end{verbatim}
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
