@@ -25,9 +25,21 @@ def my_imfilter(image, kernel):
 
     ##################
     # Your code here #
-    print('my_imfilter function in student.py needs to be implemented')
-    ##################
+    if len(image.shape) == 2:
+        Grayscale = True
+        image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+    (k, l) = kernel.shape 
+    image_padded = np.pad(image, ((k//2, k//2), (l//2, l//2), (0,0)), 'constant') 
+    output = np.zeros(image.shape)
+    for i in range():
+        for j in range():
+            for k in range():
 
+    if Grayscale:
+        output = output.reshape(output, (output.shape[0], output.shape[1]))
+    filtered_image = output
+    # print('my_imfilter function in student.py needs to be implemented')
+    ##################
     return filtered_image
 
 """
