@@ -24,12 +24,11 @@ def hybrid_img_generation(img_one_path, img_two_path):
 
     image1, image2 = equalize_image_sizes(image1, image2)
 
-
     # display the dog and cat images
     plt.figure(figsize=(3, 3))
-    plt.imshow((image1*255).astype(np.uint8))
+    plt.imshow((image1 * 255).astype(np.uint8))
     plt.figure(figsize=(3, 3))
-    plt.imshow((image2*255).astype(np.uint8))
+    plt.imshow((image2 * 255).astype(np.uint8))
 
     # For your write up, there are several additional test cases in 'data'.
     # Feel free to make your own, too (you'll need to align the images in a
@@ -44,19 +43,20 @@ def hybrid_img_generation(img_one_path, img_two_path):
     # to achieve better results.
     cutoff_frequency = 7
     low_frequencies, high_frequencies, hybrid_image = gen_hybrid_image(
-        image1, image2, cutoff_frequency)
+        image1, image2, cutoff_frequency
+    )
 
     ## Visualize and save outputs ##
     plt.figure()
-    plt.imshow((low_frequencies*255).astype(np.uint8))
+    plt.imshow((low_frequencies * 255).astype(np.uint8))
     plt.figure()
-    plt.imshow(((high_frequencies+0.5)*255).astype(np.uint8))
+    plt.imshow(((high_frequencies + 0.5) * 255).astype(np.uint8))
     vis = vis_hybrid_image(hybrid_image)
     plt.figure(figsize=(20, 20))
     plt.imshow(vis)
 
-    save_image('../results/low_frequencies.jpg', low_frequencies)
+    save_image("../results/low_frequencies.jpg", low_frequencies)
     outHigh = np.clip(high_frequencies + 0.5, 0.0, 1.0)
-    save_image('../results/high_frequencies.jpg', outHigh)
-    save_image('../results/hybrid_image.jpg', hybrid_image)
-    save_image('../results/hybrid_image_scales.jpg', vis)
+    save_image("../results/high_frequencies.jpg", outHigh)
+    save_image("../results/hybrid_image.jpg", hybrid_image)
+    save_image("../results/hybrid_image_scales.jpg", vis)

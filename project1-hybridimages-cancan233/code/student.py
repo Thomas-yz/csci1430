@@ -7,6 +7,7 @@ from numpy import pi, exp, sqrt
 from skimage import io, img_as_ubyte, img_as_float32
 from skimage.transform import rescale
 
+
 def my_imfilter(image, kernel):
     """
     Your function should meet the requirements laid out on the project webpage.
@@ -25,26 +26,41 @@ def my_imfilter(image, kernel):
 
     ##################
     # Your code here #
+    (k, l) = kernel.shape
+    (m, n, c) = image.shape
+    if (k * l) % 2 == 0:
+        raise Exception("Output with even filters are not defined!")
+
+    Grayscale = False
     if len(image.shape) == 2:
         Grayscale = True
         image = np.reshape(image, (image.shape[0], image.shape[1], 1))
-    (k, l) = kernel.shape 
-    image_padded = np.pad(image, ((k//2, k//2), (l//2, l//2), (0,0)), 'constant') 
+
+    padded_image = np.pad(
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
+    )
+    # because we want to calculate convolution, we need to flip the kernel
+    flipped_kernel = np.flip(kernel)
     output = np.zeros(image.shape)
-    for i in range():
-        for j in range():
-            for k in range():
+    for o in range(c):
+        for i in range(m):
+            for j in range(n):
+                output[i, j, o] = np.tensordot(
+                    flipped_kernel, padded_image[i : i + k, j : j + l, o]
+                )
 
     if Grayscale:
-        output = output.reshape(output, (output.shape[0], output.shape[1]))
+        output = output.reshape(output, (m, n))
     filtered_image = output
     # print('my_imfilter function in student.py needs to be implemented')
     ##################
     return filtered_image
 
+
 """
 EXTRA CREDIT placeholder function
 """
+
 
 def my_imfilter_fft(image, kernel):
     """
@@ -62,7 +78,33 @@ def my_imfilter_fft(image, kernel):
 
     ##################
     # Your code here #
-    print('my_imfilter_fft function in student.py is not implemented')
+    (k, l) = kernel.shape
+    (m, n, c) = image.shape
+    if (k * l) % 2 == 0:
+        raise Exception("Output with even filters are not defined!")
+
+    Grayscale = False
+    if len(image.shape) == 2:
+        Grayscale = True
+        image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+    padded_image = np.pad(
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
+    )
+
+    # because we want to calculate convolution, we need to flip the kernel
+    flipped_kernel = np.flip(kernel)
+    output = np.zeros(image.shape)
+    for o in range(c):
+        for i in range(m):
+            for j in range(n):
+                output[i, j, o] = np.tensordot(
+                    flipped_kernel, padded_image[i : i + k, j : j + l, o]
+                )
+
+    if Grayscale:
+        output = output.reshape(output, (m, n))
+    filtered_image = output
+    # print("my_imfilter_fft function in student.py is not implemented")
     ##################
 
     return filtered_image
@@ -70,15 +112,15 @@ def my_imfilter_fft(image, kernel):
 
 def gen_hybrid_image(image1, image2, cutoff_frequency):
     """
-     Inputs:
-     - image1 -> The image from which to take the low frequencies.
-     - image2 -> The image from which to take the high frequencies.
-     - cutoff_frequency -> The standard deviation, in pixels, of the Gaussian
-                           blur that will remove high frequencies.
+    Inputs:
+    - image1 -> The image from which to take the low frequencies.
+    - image2 -> The image from which to take the high frequencies.
+    - cutoff_frequency -> The standard deviation, in pixels, of the Gaussian
+                          blur that will remove high frequencies.
 
-     Task:
-     - Use my_imfilter to create 'low_frequencies' and 'high_frequencies'.
-     - Combine them to create 'hybrid_image'.
+    Task:
+    - Use my_imfilter to create 'low_frequencies' and 'high_frequencies'.
+    - Combine them to create 'hybrid_image'.
     """
 
     assert image1.shape[0] == image2.shape[0]
@@ -89,28 +131,37 @@ def gen_hybrid_image(image1, image2, cutoff_frequency):
     # (1) Remove the high frequencies from image1 by blurring it. The amount of
     #     blur that works best will vary with different image pairs
     # generate a 1x(2k+1) gaussian kernel with mean=0 and sigma = s, see https://stackoverflow.com/questions/17190649/how-to-obtain-a-gaussian-filter-in-python
-    s, k = cutoff_frequency, cutoff_frequency*2
-    probs = np.asarray([exp(-z*z/(2*s*s))/sqrt(2*pi*s*s) for z in range(-k,k+1)], dtype=np.float32)
+    s, k = cutoff_frequency, cutoff_frequency * 2
+    probs = np.asarray(
+        [exp(-z * z / (2 * s * s)) / sqrt(2 * pi * s * s) for z in range(-k, k + 1)],
+        dtype=np.float32,
+    )
     kernel = np.outer(probs, probs)
 
     # Your code here:
-    low_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    low_frequencies = my_imfilter(image1, kernel)  # Replace with your implementation
 
     # (2) Remove the low frequencies from image2. The easiest way to do this is to
     #     subtract a blurred version of image2 from the original version of image2.
     #     This will give you an image centered at zero with negative values.
     # Your code here #
-    high_frequencies = np.zeros(image1.shape) # Replace with your implementation
+    high_frequencies = image2 - my_imfilter(
+        image2, kernel
+    )  # Replace with your implementation
 
     # (3) Combine the high frequencies and low frequencies
     # Your code here #
-    hybrid_image = np.zeros(image1.shape) # Replace with your implementation
+    hybrid_image = low_frequencies + high_frequencies
+    # Replace with your implementation
 
     # (4) At this point, you need to be aware that values larger than 1.0
     # or less than 0.0 may cause issues in the functions in Python for saving
-    # images to disk. These are called in proj1_part2 after the call to 
+    # images to disk. These are called in proj1_part2 after the call to
     # gen_hybrid_image().
-    # One option is to clip (also called clamp) all values below 0.0 to 0.0, 
+    # One option is to clip (also called clamp) all values below 0.0 to 0.0,
     # and all values larger than 1.0 to 1.0.
+    low_frequencies = np.clip(low_frequencies, 0, 1)
+    high_frequencies = np.clip(high_frequencies, 0, 1)
+    hybrid_image = np.clip(hybrid_image, 0, 1)
 
     return low_frequencies, high_frequencies, hybrid_image
