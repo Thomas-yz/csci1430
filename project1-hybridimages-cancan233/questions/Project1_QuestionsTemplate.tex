@@ -258,7 +258,7 @@ Which of the following statements are true? (Check all that apply).
 
 \begin{tabular}[h]{ll}
 $\blacksquare$ & High pass filter kernels will always contain at least one negative number \\
-$\square$ & A Gaussian filter is an example of a low pass filter \\
+$\blacksquare$ & A Gaussian filter is an example of a low pass filter \\
 $\square$ & A high pass filter is the basis for most smoothing methods \\
 $\square$ & In a high pass filter, the center of the kernel must have the highest value \\
 \end{tabular}
@@ -457,15 +457,11 @@ illustrations than as reportage, since they can no longer distinguish between a 
 
  \paragraph{A6:} Your answer here
 %  Uncomment the stencil below and fill in your solution.
-% \begin{enumerate}[(a)]
-% \item
-% \item 
-% \item 
-% \begin{enumerate}[(i)]
-%     \item
-% \end{enumerate}
-% \item
-% \end{enumerate}
+\begin{enumerate}[(a)]
+\item Grundberg's future is when people can easily make fake image that cannot be distinguished from a genuine image. However, nowadays, this can already be achieved by using programs like Photoshop or computer vision techniques. Thus, the future described by Grundberg is today's world.
+\item In my opinion, a news picture is not genuine when it is manipulated and the content is changed and is no longer accurate and comprehensive in the representation of the scence. Although you cannot manipulate photos' content, there are still some manipulations allowed by some organizations, such as quality enhancements like contrast control, color balancing, etc.\\ (source: \\ https://advocacy.consumerreports.org/wp-content/uploads/2013/05/photos\_policies.pdf)
+\item The \emph{New York Times} is a national newspaper for everyone. Thus, making sure the pictures in daily news are genuine is important. First of all, the content of the picture should be real and have not been manipulated. Any synthetic pictures should not be accepted for news, even if it is used for illustrations. Secondly, the person should provide detailed information for the pictures submitted, for example, the location where it was taken, the time when it was taken, etc. Thirdly, as we have a large number of well-trained journalists around the world, we will combine their reports to testify that things shown in pictures can be proven by at least two individual people. Fourthly, it sill could happen that a picture showing false information been posted even if every action has been taken. In such case, we would withdraw the picture as soon as possible and apologize for such mistake to public. This will help to restore the faith of readers in us. Lastly, we can utilize modern techniques such as computer vision to distinguish if the image is manipulated, such as hybrided or faked. \\\textbf{(Please check the extra page at last for the remaining part. Thanks!)}
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -504,4 +500,19 @@ I2 = convolve2d(testimg2, f2, 'same')
 plt.imsave('convolve2d_fish.png', I2, cmap=plt.cm.gray)
 \end{python}
 
+\newpage
+\section*{A6:(c)-(d)}
+\begin{enumerate}[label=\alph*., start=3]
+\item (Remaining part for (c)): The reasons for the above procedures could work might be that \emph{NYC} is a well-organized company and have such budget and people for works to prove the authenticity of news pictures.
+\begin{enumerate}[(i)]
+    \item Apparently, we cannot use the identical procedures described above as it is expensive and unnecessary. For example, we don't have many reporters so we cannot have every pictures be proved by at least two people. The \emph{College Hill Independent} is designed for college students, who are supposed to be well-educated. Firstly, we still need the reporter to provide the detailed information for the picture. Secondly, we can establish a system for readers to spot any possible manipulated pictures and put the reporter into our blacklist. 
+\end{enumerate}
+
+\item Below is a powerful demonstration for media manipulation illusion. The manipulation here is cropping the original image to only show information that are favorable to their own side. From an anti-war orginization worker aspect, you might want to use the cropped picture on the left to show how soldiers have no mercy when it comes to war. However, if you worked for the other side, you would crop the right part of the original photo to show that soldiers are also human beings. Both sides don't show the whole view of the scence. And different cropped part will deliver contrast emotions to viewers.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[scale=1.0]{A6_d.jpg}
+\end{figure}
+\\ (source: https://www.moillusions.com/media-manipulation-illusion-example/)
+\end{enumerate}
 \end{document}

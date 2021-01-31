@@ -42,12 +42,14 @@ def my_imfilter(image, kernel):
     # because we want to calculate convolution, we need to flip the kernel
     flipped_kernel = np.flip(kernel)
     output = np.zeros(image.shape)
-    for o in range(c):
-        for i in range(m):
-            for j in range(n):
-                output[i, j, o] = np.tensordot(
-                    flipped_kernel, padded_image[i : i + k, j : j + l, o]
-                )
+
+    for i in range(m):
+        for j in range(n):
+            output[i, j] = np.tensordot(
+                flipped_kernel,
+                padded_image[i : i + k, j : j + l],
+                axes=[(0, 1), (0, 1)],
+            )
 
     if Grayscale:
         output = output.reshape(output, (m, n))
@@ -87,19 +89,22 @@ def my_imfilter_fft(image, kernel):
     if len(image.shape) == 2:
         Grayscale = True
         image = np.reshape(image, (image.shape[0], image.shape[1], 1))
-    padded_image = np.pad(
-        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
-    )
 
+    ftimage = np.fft.fft2(image, axes=(0, 1))
+
+    padded_image = np.pad(
+        ftimage, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
+    )
     # because we want to calculate convolution, we need to flip the kernel
     flipped_kernel = np.flip(kernel)
     output = np.zeros(image.shape)
-    for o in range(c):
-        for i in range(m):
-            for j in range(n):
-                output[i, j, o] = np.tensordot(
-                    flipped_kernel, padded_image[i : i + k, j : j + l, o]
-                )
+    for i in range(m):
+        for j in range(n):
+            output[i, j] = np.tensordot(
+                flipped_kernel,
+                padded_image[i : i + k, j : j + l],
+                axes=[(0, 1), (0, 1)],
+            )
 
     if Grayscale:
         output = output.reshape(output, (m, n))

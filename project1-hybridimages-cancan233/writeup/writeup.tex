@@ -89,26 +89,40 @@
 
 \section*{Project Overview}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. See Equation~\ref{eq:one}.
-
-\begin{equation}
-a = b + c
-\label{eq:one}
-\end{equation}
+This project aims to implement two functions \begin{verbatim}myfilter()\end{verbatim} and \begin{verbatim}gen_hybrid_image()\end{verbatim}. Different types of filters are applied to images to test \begin{verbatim}myfilter()\end{verbatim} function. As for \begin{verbatim}gen_hybrid_image()\end{verbatim}, besides testing with extra pairs of images, the effect of image assignment sequence to \begin{verbatim}image1\end{verbatim} and \begin{verbatim}image2\end{verbatim} is also investigated.
 
 \section*{Implementation Detail}
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-My code snippet highlights an interesting point.
+Here is the implemetation for \begin{verbatim}myfilter()\end{verbatim}
 \begin{python}
-one = 1;
-two = one + one;
-if two == 2
-    disp( 'This computer is not broken.' );
-end
-\end{python}
 
+\end{python}
+    (k, l) = kernel.shape
+    (m, n, c) = image.shape
+    if (k * l) % 2 == 0:
+        raise Exception("Output with even filters are not defined!")
+
+    Grayscale = False
+    if len(image.shape) == 2:
+        Grayscale = True
+        image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+
+    padded_image = np.pad(
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
+    )
+    # because we want to calculate convolution, we need to flip the kernel
+    flipped_kernel = np.flip(kernel)
+    output = np.zeros(image.shape)
+    for o in range(c):
+        for i in range(m):
+            for j in range(n):
+                output[i, j, o] = np.tensordot(
+                    flipped_kernel, padded_image[i : i + k, j : j + l, o]
+                )
+
+    if Grayscale:
+        output = output.reshape(output, (m, n))
+    filtered_image = output
 \section*{Result}
 
 \begin{enumerate}
@@ -144,7 +158,7 @@ My results are summarized in Table~\ref{tab:table1}.
 \section*{Extra Credit (Optional)}
 \begin{enumerate}
    
-    \item Implementation A, code snippets, and results
+    \item Pad with reflected image content
         \begin{python}
         one = 1;
         two = one + one;
@@ -153,14 +167,23 @@ My results are summarized in Table~\ref{tab:table1}.
         end
         \end{python}
     
-    \item Implementation B, code snippets, and results
+    \item own hybrid image
         \begin{python}
         one = 1;
         two = one + one;
         if two == 2
             disp( 'This computer is not broken.' );
         end
-        \end{python}
+        \end{python} 
+
+    \item FFT-based convolution
+        \begin{python}
+        one = 1;
+        two = one + one;
+        if two == 2
+            disp( 'This computer is not broken.' );
+        end
+        \end{python} 
 \end{enumerate}
 
 \end{document}
