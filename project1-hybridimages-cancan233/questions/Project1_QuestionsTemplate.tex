@@ -308,7 +308,7 @@ image = img_as_float32(io.imread('./RISDance.jpg'))
 
 # 2) TODO - change the image size so it starts at 8MPix 
 #    use one of the imported libraries
-original_image = resize(image, (2160, 3840), anti_aliasing=True)
+original_image = resize(image, (2160, 3840, 3), anti_aliasing=True)
 
 # 3) TODO - iterate through odd numbers from 3 to 15
 #   (inclusive!!) these will represent your filter sizes
@@ -324,7 +324,7 @@ for kernel_size in range(3, 16):
     times = [] #y axis
 
     #while image size is bigger than .25MPx
-    while(shrinking_image.size > 250000):
+    while(shrinking_image.size > 250000 * 3):
     
     	# 4) TODO - create your kernel. Your kernel can hold
     	#    any values, as the kernel values shouldn't 
@@ -460,7 +460,7 @@ illustrations than as reportage, since they can no longer distinguish between a 
 \begin{enumerate}[(a)]
 \item Grundberg's future is when people can easily make fake image that cannot be distinguished from a genuine image. However, nowadays, this can already be achieved by using programs like Photoshop or computer vision techniques. Thus, the future described by Grundberg is today's world.
 \item In my opinion, a news picture is not genuine when it is manipulated and the content is changed and is no longer accurate and comprehensive in the representation of the scence. Although you cannot manipulate photos' content, there are still some manipulations allowed by some organizations, such as quality enhancements like contrast control, color balancing, etc.\\ (source: \\ https://advocacy.consumerreports.org/wp-content/uploads/2013/05/photos\_policies.pdf)
-\item The \emph{New York Times} is a national newspaper for everyone. Thus, making sure the pictures in daily news are genuine is important. First of all, the content of the picture should be real and have not been manipulated. Any synthetic pictures should not be accepted for news, even if it is used for illustrations. Secondly, the person should provide detailed information for the pictures submitted, for example, the location where it was taken, the time when it was taken, etc. Thirdly, as we have a large number of well-trained journalists around the world, we will combine their reports to testify that things shown in pictures can be proven by at least two individual people. Fourthly, it sill could happen that a picture showing false information been posted even if every action has been taken. In such case, we would withdraw the picture as soon as possible and apologize for such mistake to public. This will help to restore the faith of readers in us. Lastly, we can utilize modern techniques such as computer vision to distinguish if the image is manipulated, such as hybrided or faked. \\\textbf{(Please check the extra page at last for the remaining part. Thanks!)}
+\textbf{(Please check the extra page at last for the remaining part. Thanks!)}
 \end{enumerate}
 
 
@@ -503,7 +503,8 @@ plt.imsave('convolve2d_fish.png', I2, cmap=plt.cm.gray)
 \newpage
 \section*{A6:(c)-(d)}
 \begin{enumerate}[label=\alph*., start=3]
-\item (Remaining part for (c)): The reasons for the above procedures could work might be that \emph{NYC} is a well-organized company and have such budget and people for works to prove the authenticity of news pictures.
+\item The \emph{New York Times} is a national newspaper for everyone. Thus, making sure the pictures in daily news are genuine is important. First of all, the content of the picture should be real and have not been manipulated. Any synthetic pictures should not be accepted for news, even if it is used for illustrations. Secondly, the person should provide detailed information for the pictures submitted, for example, the location where it was taken, the time when it was taken, etc. Thirdly, as we have a large number of well-trained journalists around the world, we will combine their reports to testify that things shown in pictures can be proven by at least two individual people. Fourthly, it sill could happen that a picture showing false information been posted even if every action has been taken. In such case, we would withdraw the picture as soon as possible and apologize for such mistake to public. This will help to restore the faith of readers in us. Lastly, we can utilize modern techniques such as computer vision to distinguish if the image is manipulated, such as hybrided or faked. \\
+The reasons for the above procedures could work might be that \emph{NYC} is a well-organized company and have such budget and people for works to prove the authenticity of news pictures.
 \begin{enumerate}[(i)]
     \item Apparently, we cannot use the identical procedures described above as it is expensive and unnecessary. For example, we don't have many reporters so we cannot have every pictures be proved by at least two people. The \emph{College Hill Independent} is designed for college students, who are supposed to be well-educated. Firstly, we still need the reporter to provide the detailed information for the picture. Secondly, we can establish a system for readers to spot any possible manipulated pictures and put the reporter into our blacklist. 
 \end{enumerate}

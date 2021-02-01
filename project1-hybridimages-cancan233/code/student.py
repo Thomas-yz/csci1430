@@ -90,21 +90,24 @@ def my_imfilter_fft(image, kernel):
         Grayscale = True
         image = np.reshape(image, (image.shape[0], image.shape[1], 1))
 
-    ftimage = np.fft.fft2(image, axes=(0, 1))
-
     padded_image = np.pad(
-        ftimage, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
     )
     # because we want to calculate convolution, we need to flip the kernel
     flipped_kernel = np.flip(kernel)
+    fft_kernel = np.fft.fft2(flipped_kernel)
     output = np.zeros(image.shape)
+    fft_image = np.fft.fft2(padded_image)
+
     for i in range(m):
         for j in range(n):
             output[i, j] = np.tensordot(
-                flipped_kernel,
-                padded_image[i : i + k, j : j + l],
+                fft_kernel,
+                fft_image[i : i + k, j : j + l],
                 axes=[(0, 1), (0, 1)],
             )
+
+    output = np.real(np.fft.ifft(output))
 
     if Grayscale:
         output = output.reshape(output, (m, n))

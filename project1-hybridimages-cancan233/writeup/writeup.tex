@@ -89,46 +89,40 @@
 
 \section*{Project Overview}
 
-This project aims to implement two functions \begin{verbatim}myfilter()\end{verbatim} and \begin{verbatim}gen_hybrid_image()\end{verbatim}. Different types of filters are applied to images to test \begin{verbatim}myfilter()\end{verbatim} function. As for \begin{verbatim}gen_hybrid_image()\end{verbatim}, besides testing with extra pairs of images, the effect of image assignment sequence to \begin{verbatim}image1\end{verbatim} and \begin{verbatim}image2\end{verbatim} is also investigated.
+This project aims to implement two functions \verb|myfilter()| and \verb|gen_hybrid_image()|. Different types of filters are applied to images to test \verb|myfilter()| function. As for \verb|gen_hybrid_image()|, besides testing with extra pairs of images, the effect of image assignment sequence to image1 and image2 is also investigated.
 
 \section*{Implementation Detail}
 
-Here is the implemetation for \begin{verbatim}myfilter()\end{verbatim}
+Here is the implemetation for \verb|myfilter()|. At first, shapes of the kernel and image are obtained and an error message is raised if the filter has an even-dimension. In order to support both grayscale and RGB pictures, the grayscale picture is reshaped to a 3d array, so that we don't need to worry about the dimensions difference between grayscale and RGB picture. Then, the image is padded with 0 on the hight and width dimension using \verb|np.pad()|. The kernel is flipped using \verb|np.flit()| as we want to realize convolution operation. After all above manipulations, the output is obtained by taken dot product between \verb|flipped_kernel| and \verb|padded_image|. If the input image is grayscale, the output is reshaped back to 2D to keep the result the same dimension as the input.
 \begin{python}
+(k, l) = kernel.shape
+(m, n, c) = image.shape
+if (k * l) % 2 == 0:
+    raise Exception("Output with even filters are not defined!")
 
+Grayscale = False
+if len(image.shape) == 2:
+    Grayscale = True
+    image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+
+padded_image = np.pad(image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant")
+# because we want to calculate convolution, we need to flip the kernel
+flipped_kernel = np.flip(kernel)
+output = np.zeros(image.shape)
+for i in range(m):
+    for j in range(n):
+        output[i, j] = np.tensordot(flipped_kernel, padded_image[i : i + k, j : j + l], axes=[(0, 1), (0, 1)])
+
+if Grayscale:
+    output = output.reshape(output, (m, n))
+filtered_image = output
 \end{python}
-    (k, l) = kernel.shape
-    (m, n, c) = image.shape
-    if (k * l) % 2 == 0:
-        raise Exception("Output with even filters are not defined!")
-
-    Grayscale = False
-    if len(image.shape) == 2:
-        Grayscale = True
-        image = np.reshape(image, (image.shape[0], image.shape[1], 1))
-
-    padded_image = np.pad(
-        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
-    )
-    # because we want to calculate convolution, we need to flip the kernel
-    flipped_kernel = np.flip(kernel)
-    output = np.zeros(image.shape)
-    for o in range(c):
-        for i in range(m):
-            for j in range(n):
-                output[i, j, o] = np.tensordot(
-                    flipped_kernel, padded_image[i : i + k, j : j + l, o]
-                )
-
-    if Grayscale:
-        output = output.reshape(output, (m, n))
-    filtered_image = output
 \section*{Result}
 
 \begin{enumerate}
-    \item Result 1 was a total failure, because...
-    \item Result 2 (Figure~\ref{fig:result1}, left) was surprising, because...
-    \item Result 3 (Figure~\ref{fig:result1}, right) blew my socks off, because...
+    \item Results for different filters
+
+    \item results for hybrid with different sequence.
 \end{enumerate}
 
 \begin{figure}[h]
@@ -138,22 +132,6 @@ Here is the implemetation for \begin{verbatim}myfilter()\end{verbatim}
     \caption{\emph{Left:} My result was spectacular. \emph{Right:} Curious.}
     \label{fig:result1}
 \end{figure}
-
-My results are summarized in Table~\ref{tab:table1}.
-
-\begin{table}[h]
-    \centering
-    \begin{tabular}{lr}
-        \toprule
-        Condition & Time (seconds) \\
-        \midrule
-        Test 1 & 1 \\
-        Test 2 & 1000 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Stunning revelation about the efficiency of my code.}
-    \label{tab:table1}
-\end{table}
 
 \section*{Extra Credit (Optional)}
 \begin{enumerate}
