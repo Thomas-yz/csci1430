@@ -1,4 +1,4 @@
-# Project Image Filtering and Hybrid Images - Tests on my_imfilter_fft function
+# Project Image Filtering and Hybrid Images - Tests on my_imfilter function
 # Based on previous and current work
 # by James Hays for CSCI 1430 @ Brown and
 # CS 4495/6476 @ Georgia Tech
@@ -8,7 +8,7 @@ import numpy as np
 from numpy import pi, exp, sqrt
 import matplotlib.pyplot as plt
 from helpers import load_image, save_image
-from student import my_imfilter_fft
+from student import my_imfilter
 
 """
 This function loads an image, and then attempts to filter that image
@@ -29,7 +29,7 @@ def filter_test(img_path):
     This filter should do nothing regardless of the padding method you use.
     """
     identity_filter = np.asarray([[0, 0, 0], [0, 1, 0], [0, 0, 0]], dtype=np.float32)
-    identity_image = my_imfilter_fft(test_image, identity_filter)
+    identity_image = my_imfilter(test_image, identity_filter)
     plt.imshow(identity_image)
     plt.show()
     done = save_image("../results/identity_image.jpg", identity_image)
@@ -40,7 +40,7 @@ def filter_test(img_path):
     blur_filter = np.ones((3, 3), dtype=np.float32)
     # making the filter sum to 1
     blur_filter /= np.sum(blur_filter, dtype=np.float32)
-    blur_image = my_imfilter_fft(test_image, blur_filter)
+    blur_image = my_imfilter(test_image, blur_filter)
     plt.imshow(blur_image)
     plt.show()
     done = save_image(resultsDir + os.sep + "blur_image.jpg", blur_image)
@@ -55,9 +55,9 @@ def filter_test(img_path):
         dtype=np.float32,
     )
     large_1d_blur_filter = large_1d_blur_filter.reshape(-1, 1)
-    large_blur_image = my_imfilter_fft(test_image, large_1d_blur_filter)
+    large_blur_image = my_imfilter(test_image, large_1d_blur_filter)
     # notice the T operator which transposes the filter
-    large_blur_image = my_imfilter_fft(large_blur_image, large_1d_blur_filter.T)
+    large_blur_image = my_imfilter(large_blur_image, large_1d_blur_filter.T)
     plt.imshow(large_blur_image)
     plt.show()
     done = save_image(resultsDir + os.sep + "large_blur_image.jpg", large_blur_image)
@@ -66,7 +66,7 @@ def filter_test(img_path):
     # import time
     # large_blur_filter = np.dot(large_1d_blur_filter, large_1d_blur_filter.T)
     # t = time.time()
-    # large_blur_image = my_imfilter_fft(test_image, large_blur_filter);
+    # large_blur_image = my_imfilter(test_image, large_blur_filter);
     # t = time.time() - t
     # print('{:f} seconds'.format(t))
     ##
@@ -77,7 +77,7 @@ def filter_test(img_path):
     sobel_filter = np.asarray(
         [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], dtype=np.float32
     )  # should respond to horizontal gradients
-    sobel_image = my_imfilter_fft(test_image, sobel_filter)
+    sobel_image = my_imfilter(test_image, sobel_filter)
 
     # 0.5 added because the output image is centered around zero otherwise and mostly black
     sobel_image = np.clip(sobel_image + 0.5, 0.0, 1.0)
@@ -88,7 +88,7 @@ def filter_test(img_path):
     High pass filter (discrete Laplacian)
     """
     laplacian_filter = np.asarray([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
-    laplacian_image = my_imfilter_fft(test_image, laplacian_filter)
+    laplacian_image = my_imfilter(test_image, laplacian_filter)
 
     # added because the output image is centered around zero otherwise and mostly black
     laplacian_image = np.clip(laplacian_image + 0.5, 0.0, 1.0)

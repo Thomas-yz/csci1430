@@ -1,3 +1,8 @@
+'''
+Author: Cancan Huang
+Date: 2021-01-27 02:29:30
+LastEditTime: 2021-02-02 03:24:05
+'''
 # Project Image Filtering and Hybrid Images Stencil Code
 # Based on previous and current work
 # by James Hays for CSCI 1430 @ Brown and
