@@ -93,7 +93,11 @@ This project aims to implement two functions \verb|myfilter()| and \verb|gen_hyb
 
 \section*{Implementation Detail}
 
-Here is the implemetation for \verb|myfilter()|. At first, shapes of the kernel and image are obtained and an error message is raised if the filter has an even-dimension. In order to support both grayscale and RGB pictures, the grayscale picture is reshaped to a 3d array, so that we don't need to worry about the dimensions difference between grayscale and RGB picture. Then, the image is padded with 0 on the hight and width dimension using \verb|np.pad()|. The kernel is flipped using \verb|np.flit()| as we want to realize convolution operation. After all above manipulations, the output is obtained by taken dot product between \verb|flipped_kernel| and \verb|padded_image|. If the input image is grayscale, the output is reshaped back to 2D to keep the result the same dimension as the input.
+Here is the implemetation for \verb|myfilter()|. At first, shapes of the kernel and image are obtained and an error message is raised if the filter has an even-dimension. In order to support both grayscale and RGB pictures, the grayscale picture is reshaped to a 3d array, so that we don't need to worry about the dimensions difference between grayscale and RGB picture. Then, the image is padded with 0 on the hight and width dimension using \verb|np.pad()|. The kernel is flipped using \verb|np.flit()| as we want to realize convolution operation. After all above manipulations, the output is obtained by taken dot product between \verb|flipped_kernel| and \verb|padded_image|. 
+
+I have tried two ways to obtain the product output of \verb|flipped_kernel| and \verb|padded_image|. (Both are included below) The first implementation is an ordinary way
+
+At last, if the input image is grayscale, the output is reshaped back to 2D to keep the result the same dimension as the input.
 \begin{python}
 (k, l) = kernel.shape
 (m, n, c) = image.shape
@@ -108,10 +112,34 @@ if len(image.shape) == 2:
 padded_image = np.pad(image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant")
 # because we want to calculate convolution, we need to flip the kernel
 flipped_kernel = np.flip(kernel)
+
+# First Implementation
 output = np.zeros(image.shape)
 for i in range(m):
     for j in range(n):
         output[i, j] = np.tensordot(flipped_kernel, padded_image[i : i + k, j : j + l], axes=[(0, 1), (0, 1)])
+
+# Second Implementation
+expanded_image = np.lib.stride_tricks.as_strided(
+        padded_image,
+        shape=(
+            m,
+            n,
+            c,
+            k,
+            l,
+        ),
+        strides=(
+            padded_image.strides[0],
+            padded_image.strides[1],
+            padded_image.strides[2],
+            padded_image.strides[0],
+            padded_image.strides[1],
+        ),
+        writeable=False,
+    )
+
+output = np.einsum("xyzij, ij->xyz", expanded_image, flipped_kernel)
 
 if Grayscale:
     output = output.reshape(output, (m, n))

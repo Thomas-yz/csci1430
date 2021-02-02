@@ -6,6 +6,64 @@ import numpy as np
 from numpy import pi, exp, sqrt
 from skimage import io, img_as_ubyte, img_as_float32
 from skimage.transform import rescale
+from scipy import fftpack
+from scipy import signal
+
+# def my_imfilter(image, kernel):
+#     """
+#     Your function should meet the requirements laid out on the project webpage.
+#     Apply a filter (using kernel) to an image. Return the filtered image. To
+#     achieve acceptable runtimes, you MUST use numpy multiplication and summation
+#     when applying the kernel.
+#     Inputs
+#     - image: numpy nd-array of dim (m,n) or (m, n, c)
+#     - kernel: numpy nd-array of dim (k, l)
+#     Returns
+#     - filtered_image: numpy nd-array of dim of equal 2D size (m,n) or 3D size (m, n, c)
+#     Errors if:
+#     - filter/kernel has any even dimension -> raise an Exception with a suitable error message.
+#     """
+#     filtered_image = np.zeros(image.shape)
+
+#     ##################
+#     # Your code here #
+#     (k, l) = kernel.shape
+#     if (k * l) % 2 == 0:
+#         raise Exception("Output with even filters are not defined!")
+
+#     Grayscale = False
+#     if len(image.shape) == 2:
+#         Grayscale = True
+#         image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+#     (m, n, _) = image.shape
+
+#     # zero padded
+#     # padded_image = np.pad(
+#     # image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
+#     # )
+
+#     # reflected padded
+#     padded_image = np.pad(
+#         image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect"
+#     )
+#     # because we want to calculate convolution, we need to flip the kernel
+#     flipped_kernel = np.flip(kernel)
+#     output = np.zeros(image.shape)
+
+#     for i in range(m):
+#         for j in range(n):
+#             output[i, j] = np.tensordot(
+#                 flipped_kernel,
+#                 padded_image[i : i + k, j : j + l],
+#                 axes=[(0, 1), (0, 1)],
+#             )
+
+#     if Grayscale:
+#         output = np.reshape(output, (m, n))
+#     filtered_image = output
+#     # print('my_imfilter function in student.py needs to be implemented')
+#     ##################
+#     return filtered_image
 
 
 def my_imfilter(image, kernel):
@@ -27,7 +85,6 @@ def my_imfilter(image, kernel):
     ##################
     # Your code here #
     (k, l) = kernel.shape
-    (m, n, c) = image.shape
     if (k * l) % 2 == 0:
         raise Exception("Output with even filters are not defined!")
 
@@ -35,24 +92,38 @@ def my_imfilter(image, kernel):
     if len(image.shape) == 2:
         Grayscale = True
         image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+    (m, n, c) = image.shape
 
-    padded_image = np.pad(
-        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
-    )
     # because we want to calculate convolution, we need to flip the kernel
     flipped_kernel = np.flip(kernel)
-    output = np.zeros(image.shape)
+    (k, l) = flipped_kernel.shape
+    padded_image = np.pad(
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect"
+    )
 
-    for i in range(m):
-        for j in range(n):
-            output[i, j] = np.tensordot(
-                flipped_kernel,
-                padded_image[i : i + k, j : j + l],
-                axes=[(0, 1), (0, 1)],
-            )
+    expanded_image = np.lib.stride_tricks.as_strided(
+        padded_image,
+        shape=(
+            m,
+            n,
+            c,
+            k,
+            l,
+        ),
+        strides=(
+            padded_image.strides[0],
+            padded_image.strides[1],
+            padded_image.strides[2],
+            padded_image.strides[0],
+            padded_image.strides[1],
+        ),
+        writeable=False,
+    )
+
+    output = np.einsum("xyzij, ij->xyz", expanded_image, flipped_kernel)
 
     if Grayscale:
-        output = output.reshape(output, (m, n))
+        output = np.reshape(output, (m, n))
     filtered_image = output
     # print('my_imfilter function in student.py needs to be implemented')
     ##################
@@ -81,7 +152,6 @@ def my_imfilter_fft(image, kernel):
     ##################
     # Your code here #
     (k, l) = kernel.shape
-    (m, n, c) = image.shape
     if (k * l) % 2 == 0:
         raise Exception("Output with even filters are not defined!")
 
@@ -89,28 +159,24 @@ def my_imfilter_fft(image, kernel):
     if len(image.shape) == 2:
         Grayscale = True
         image = np.reshape(image, (image.shape[0], image.shape[1], 1))
-
-    padded_image = np.pad(
-        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
-    )
+    (m, n, c) = image.shape
     # because we want to calculate convolution, we need to flip the kernel
     flipped_kernel = np.flip(kernel)
-    fft_kernel = np.fft.fft2(flipped_kernel)
-    output = np.zeros(image.shape)
-    fft_image = np.fft.fft2(padded_image)
+    (k, l) = flipped_kernel.shape
+    padded_image = np.pad(
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect"
+    )
 
-    for i in range(m):
-        for j in range(n):
-            output[i, j] = np.tensordot(
-                fft_kernel,
-                fft_image[i : i + k, j : j + l],
-                axes=[(0, 1), (0, 1)],
-            )
+    fft_kernel = fftpack.fft2(flipped_kernel, shape=padded_image.shape[:2], axes=(0, 1))
 
-    output = np.real(np.fft.ifft(output))
+    ref_fft_kernel = signal.fftconvolve(image, kernel)
 
+    fft_image = fftpack.fft2(padded_image, axes=(0, 1))
+    fft_output = fft_kernel[:, :, np.newaxis] * fft_image
+    output = fftpack.ifft2(fft_output, axes=(0, 1)).real
+    output = np.clip(output[k // 2 : -(k // 2), l // 2 : -(l // 2)], 0, 1)
     if Grayscale:
-        output = output.reshape(output, (m, n))
+        output = np.reshape(output, (m, n))
     filtered_image = output
     # print("my_imfilter_fft function in student.py is not implemented")
     ##################
