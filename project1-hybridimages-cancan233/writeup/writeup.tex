@@ -93,11 +93,12 @@ This project aims to implement two functions \verb|myfilter()| and \verb|gen_hyb
 
 \section*{Implementation Detail}
 
-Here is the implemetation for \verb|myfilter()|. At first, shapes of the kernel and image are obtained and an error message is raised if the filter has an even-dimension. In order to support both grayscale and RGB pictures, the grayscale picture is reshaped to a 3d array, so that we don't need to worry about the dimensions difference between grayscale and RGB picture. Then, the image is padded with 0 on the hight and width dimension using \verb|np.pad()|. The kernel is flipped using \verb|np.flit()| as we want to realize convolution operation. After all above manipulations, the output is obtained by taken dot product between \verb|flipped_kernel| and \verb|padded_image|. 
+Here is the implemetation for \verb|myfilter()|. At first, shapes of the kernel and image are obtained and an error message is raised if the filter has an even-dimension. In order to support both grayscale and RGB pictures, the grayscale picture is reshaped to a 3d array, so that we don't need to worry about the dimensions difference between grayscale and RGB picture. Then, the image is padded with reflect mode on the hight and width dimension using \verb|np.pad()|. The kernel is flipped using \verb|np.flit()| as we want to realize convolution operation. After all above manipulations, the output is obtained by taken dot product between \verb|flipped_kernel| and \verb|padded_image|. 
 
-I have tried two ways to obtain the product output of \verb|flipped_kernel| and \verb|padded_image|. (Both are included below) The first implementation is an ordinary way
+I have tried two ways to obtain the final output. (Both are included in code block below) The first implementation is an ordinary way: using two for loop over the height and width dimesion of image and use \verb|np.tensordot()| to obtain the convolution output. The second implementation is using \verb|np.lib.stride_tricks.as_strided()| and \verb|np.einsum()| to avoid using for loop, which can shorten the excutation time from 2.6s to 0.08s, about 30 times faster.
 
 At last, if the input image is grayscale, the output is reshaped back to 2D to keep the result the same dimension as the input.
+
 \begin{python}
 (k, l) = kernel.shape
 (m, n, c) = image.shape
@@ -109,7 +110,7 @@ if len(image.shape) == 2:
     Grayscale = True
     image = np.reshape(image, (image.shape[0], image.shape[1], 1))
 
-padded_image = np.pad(image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant")
+padded_image = np.pad(image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect")
 # because we want to calculate convolution, we need to flip the kernel
 flipped_kernel = np.flip(kernel)
 
@@ -145,50 +146,80 @@ if Grayscale:
     output = output.reshape(output, (m, n))
 filtered_image = output
 \end{python}
+
+\newpage
 \section*{Result}
 
 \begin{enumerate}
-    \item Results for different filters
+    \item Different filters are tested as implemented in file \verb|proj1_part1.py|. The results for the \verb|dog.bmp| are shown in Fig. 1 and all of them meet the expectation for the corresponding filters.
+    
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=5cm]{../results/identity_image.jpg}
+        \includegraphics[width=5cm]{../results/blur_image.jpg}
+        \includegraphics[width=5cm]{../results/large_blur_image.jpg}
+        \includegraphics[width=5cm]{../results/sobel_image.jpg}
+        \includegraphics[width=5cm]{../results/laplacian_image.jpg}
+        \includegraphics[width=5cm]{../results/high_pass_image.jpg}
+        \caption{\emph{Left:} (from top to bottom)identity filter, large blur filter, laplacian fliter. \emph{Right:} (from top to bottom) blur fliter, sobel fliter, high pass fliter.}
+    \end{figure}
 
-    \item results for hybrid with different sequence.
+    \item For the hybrid image generation, it will differ depending on which image is assign as image1 (which will provide the low frequencies) and which image
+    is asign as image2 (which will provide the high frequencies). One simple example is presented below.
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=10cm]{../results/hybrid_image_scales_1.jpg}
+        \includegraphics[width=10cm]{../results/hybrid_image_scales_2.jpg}
+        \caption{\emph{Top:} image1 is dog.bmp and image2 is cat.bmp \emph{Bottom:} image1 is cat.bmp and image2 is dog.bmp.}
+    \end{figure}
+
 \end{enumerate}
 
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=5cm]{placeholder.jpg}
-    \includegraphics[width=5cm]{placeholder.jpg}
-    \caption{\emph{Left:} My result was spectacular. \emph{Right:} Curious.}
-    \label{fig:result1}
-\end{figure}
-
+\newpage
 \section*{Extra Credit (Optional)}
 \begin{enumerate}
-   
-    \item Pad with reflected image content
+    \item Pad with reflected image content.
         \begin{python}
-        one = 1;
-        two = one + one;
-        if two == 2
-            disp( 'This computer is not broken.' );
-        end
+padded_image = np.pad(image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect")
         \end{python}
-    
-    \item own hybrid image
-        \begin{python}
-        one = 1;
-        two = one + one;
-        if two == 2
-            disp( 'This computer is not broken.' );
-        end
-        \end{python} 
+    (Please check next page for 2 and 3)
+    \newpage
+    \item Create own hybrid image. Here is my own hybrid image result shown below.
+    \begin{figure}[htbp]
+        \centering
+        \includegraphics[width=5cm]{../data/Putin.jpg}
+        \includegraphics[width=5cm]{../data/Trump.jpg}
+        \includegraphics[width=10cm]{../results/hybrid_image_scales.jpg}
+        \caption{Own hybrid image: created from Putin.jpg and Trump.jpg}
+    \end{figure}
 
-    \item FFT-based convolution
+    \item Here is the code for my FFT-based convolution. I use \verb|scipy.fftpack()| for the FFT transformation. It can produce similar images as presented in Fig. 1. However, I don't know why it hasn't passed the autograder.
         \begin{python}
-        one = 1;
-        two = one + one;
-        if two == 2
-            disp( 'This computer is not broken.' );
-        end
+(k, l) = kernel.shape
+if (k * l) % 2 == 0:
+    raise Exception("Output with even filters are not defined!")
+
+Grayscale = False
+if len(image.shape) == 2:
+    Grayscale = True
+    image = np.reshape(image, (image.shape[0], image.shape[1], 1))
+(m, n, c) = image.shape
+# because we want to calculate convolution, we need to flip the kernel
+flipped_kernel = np.flip(kernel)
+(k, l) = flipped_kernel.shape
+padded_image = np.pad(
+    image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect",
+)
+
+fft_kernel = fftpack.fft2(flipped_kernel, shape=padded_image.shape[:2], axes=(0, 1))
+
+fft_image = fftpack.fft2(padded_image, axes=(0, 1))
+fft_output = fft_kernel[:, :, np.newaxis] * fft_image
+output = fftpack.ifft2(fft_output, axes=(0, 1)).real
+output = np.clip(output[k // 2 : -(k // 2), l // 2 : -(l // 2)], 0, 1)
+if Grayscale:
+    output = np.reshape(output, (m, n))
+filtered_image = output
         \end{python} 
 \end{enumerate}
 

@@ -7,7 +7,7 @@ from numpy import pi, exp, sqrt
 from skimage import io, img_as_ubyte, img_as_float32
 from skimage.transform import rescale
 from scipy import fftpack
-from scipy import signal
+
 
 # def my_imfilter(image, kernel):
 #     """
@@ -169,7 +169,7 @@ def my_imfilter_fft(image, kernel):
 
     fft_kernel = fftpack.fft2(flipped_kernel, shape=padded_image.shape[:2], axes=(0, 1))
 
-    ref_fft_kernel = signal.fftconvolve(image, kernel)
+    # ref_fft_kernel = signal.fftconvolve(image, kernel)
 
     fft_image = fftpack.fft2(padded_image, axes=(0, 1))
     fft_output = fft_kernel[:, :, np.newaxis] * fft_image
