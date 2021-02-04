@@ -7,7 +7,7 @@ from numpy import pi, exp, sqrt
 from skimage import io, img_as_ubyte, img_as_float32
 from skimage.transform import rescale
 from scipy import fftpack
-
+from scipy import signal
 
 # def my_imfilter(image, kernel):
 #     """
@@ -164,20 +164,35 @@ def my_imfilter_fft(image, kernel):
     flipped_kernel = np.flip(kernel)
     (k, l) = flipped_kernel.shape
     padded_image = np.pad(
-        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "reflect"
+        image, ((k // 2, k // 2), (l // 2, l // 2), (0, 0)), "constant"
     )
 
     fft_kernel = fftpack.fft2(flipped_kernel, shape=padded_image.shape[:2], axes=(0, 1))
+    reshape_kernel = flipped_kernel.reshape(k, l, 1)
+    ref_fft_kernel = signal.fftconvolve(image, reshape_kernel, mode='same')
 
-    # ref_fft_kernel = signal.fftconvolve(image, kernel)
+    # print(ref_fft_kernel.shape)
+    # print(ref_fft_kernel[0])
 
     fft_image = fftpack.fft2(padded_image, axes=(0, 1))
     fft_output = fft_kernel[:, :, np.newaxis] * fft_image
+    # fft_output = fftpack.fftshift(fft_output)
     output = fftpack.ifft2(fft_output, axes=(0, 1)).real
-    output = np.clip(output[k // 2 : -(k // 2), l // 2 : -(l // 2)], 0, 1)
+
+    # output = np.clip(output[], 0, 1)
+    # print(output.shape)
+    # print(output[0])
+    # exit()
+    output = np.clip(output[k // 2 : -(k // 2), l // 2 : -(l // 2), :], 0, 1)
     if Grayscale:
         output = np.reshape(output, (m, n))
     filtered_image = output
+
+    print(ref_fft_kernel.shape)
+    print(filtered_image.shape)
+    # print(filtered_image[:,:,0])
+    print(ref_fft_kernel[0,:10,0] - filtered_image[0,:10,0])
+
     # print("my_imfilter_fft function in student.py is not implemented")
     ##################
 
