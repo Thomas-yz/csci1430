@@ -11,3 +11,4 @@ results/*
 *.fls
 *.fdb_latexmk
 *.aux
+submit/*
