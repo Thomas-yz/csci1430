@@ -79,7 +79,8 @@ class live_FFT2():
 
         if self.use_camera == False:
             # No camera!
-            self.im = rgb2gray(img_as_float(io.imread('YuanningHuCrop.png'))) # One of our intrepid TAs (Yuanning was one of our HTAs for Spring 2019)
+            # self.im = rgb2gray(img_as_float(io.imread('YuanningHuCrop.png'))) # One of our intrepid TAs (Yuanning was one of our HTAs for Spring 2019)
+            self.im = rgb2gray(img_as_float(io.imread('IU.png')))
         else:
             # We found a camera!
             # Requested camera size. This will be cropped square later on, e.g., 240 x 240
@@ -190,33 +191,33 @@ class live_FFT2():
         # # Note the reconstructed image (top right) as we light up different basis frequencies.
 
         ########################################################
-        # Part 1: Reconstructing from different numbers of basis frequencies
+        # # Part 1: Reconstructing from different numbers of basis frequencies
         
-        # What if we set some frequency amplitudes to zero, but vary
-        # over time which ones we set?
+        # # What if we set some frequency amplitudes to zero, but vary
+        # # over time which ones we set?
 
-        # Make a circular mask over the amplitude image
-        Y, X = np.ogrid[:height, :width]
-        dist_from_center = np.sqrt((X-(width/2))**2 + (Y-(height/2))**2)
-        # Suppress amplitudes less than cutoff radius
-        mask = dist_from_center >= self.amplitudeCutoffRadius
-        a = np.fft.fftshift(amplitude)
-        a[mask] = 0
-        amplitude = np.fft.fftshift(a)
+        # # Make a circular mask over the amplitude image
+        # Y, X = np.ogrid[:height, :width]
+        # dist_from_center = np.sqrt((X-(width/2))**2 + (Y-(height/2))**2)
+        # # Suppress amplitudes less than cutoff radius
+        # mask = dist_from_center >= self.amplitudeCutoffRadius
+        # a = np.fft.fftshift(amplitude)
+        # a[mask] = 0
+        # amplitude = np.fft.fftshift(a)
 
-        # Slowly undulate the cutoff radius back and forth
-        # If radius is small and direction is decreasing, then flip the direction!
-        if self.amplitudeCutoffRadius <= 1 and self.amplitudeCutoffDirection < 0:
-            self.amplitudeCutoffDirection *= -1
-        # If radius is large and direction is increasing, then flip the direction!
-        if self.amplitudeCutoffRadius > width/3 and self.amplitudeCutoffDirection > 0:
-            self.amplitudeCutoffDirection *= -1
+        # # Slowly undulate the cutoff radius back and forth
+        # # If radius is small and direction is decreasing, then flip the direction!
+        # if self.amplitudeCutoffRadius <= 1 and self.amplitudeCutoffDirection < 0:
+        #     self.amplitudeCutoffDirection *= -1
+        # # If radius is large and direction is increasing, then flip the direction!
+        # if self.amplitudeCutoffRadius > width/3 and self.amplitudeCutoffDirection > 0:
+        #     self.amplitudeCutoffDirection *= -1
         
-        self.amplitudeCutoffRadius += self.amplitudeCutoffDirection
+        # self.amplitudeCutoffRadius += self.amplitudeCutoffDirection
 
 
         # ########################################################
-        # # Part 2: Replacing amplitude / phase with that of another image
+        # # # Part 2: Replacing amplitude / phase with that of another image
         
         # imJack = cv2.resize( self.imJack, self.im.shape )
         # imJackFFT = np.fft.fft2( imJack )
@@ -224,12 +225,12 @@ class live_FFT2():
         # phaseJack = np.arctan2( imJackFFT.imag, imJackFFT.real )
         
         # # Comment in either or both of these
-        # #amplitude = amplitudeJack
-        # #phase = phaseJack
+        # # amplitude = amplitudeJack
+        # phase = phaseJack
 
 
         #########################################################
-        ## Part 3: Replacing amplitude / phase with that of a noisy image
+        # # Part 3: Replacing amplitude / phase with that of a noisy image
         
         # # Generate some noise
         # self.uniform_noise = np.random.uniform( 0, 1, self.im.shape )
@@ -238,17 +239,17 @@ class live_FFT2():
         # phaseNoise = np.arctan2( imNoiseFFT.imag, imNoiseFFT.real )
         
         # # Comment in either or both of these
-        # #amplitude = amplitudeNoise
-        # #phase = phaseNoise
+        # amplitude = amplitudeNoise
+        # phase = phaseNoise
 
 
         #########################################################
-        ## Part 4: Understanding amplitude and phase
-        #
+        # # Part 4: Understanding amplitude and phase
+        
         # Play with the images. What can you discover?
         
         # Zero out phase?
-        # phase = np.zeros( self.im.shape ) # + 0.5 * phase
+        # phase = np.zeros( self.im.shape )  + 0.5 * phase
 
         # Flip direction?
         # phase = -phase
@@ -256,14 +257,14 @@ class live_FFT2():
         # # Rotate phase values?
         # self.phaseOffset += 0.05
         # phase = np.arctan2( imFFT.imag, imFFT.real ) + self.phaseOffset
-        # # Always place within -pi to pi
+        # # # Always place within -pi to pi
         # phase += np.pi
         # phase %= 2*np.pi
         # phase -= np.pi
 
         # Rotate whole image? Together? Individually?
-        #phase = np.rot90( phase )
-        #amplitude = np.rot90( amplitude )
+        phase = np.rot90( phase )
+        amplitude = np.rot90( amplitude )
         
         # Are these manipulations meaningful?
         # What other manipulations might we perform?

@@ -1,3 +1,8 @@
+'''
+Author: Cancan Huang
+Date: 2021-02-03 20:52:23
+LastEditTime: 2021-02-09 02:38:41
+'''
 """
 This code adapted from scikit-image documentation
 http://scikit-image.org/docs/dev/auto_examples/features_detection/plot_corner.html
@@ -22,9 +27,10 @@ from matplotlib import pyplot as plt
 
 from skimage import io, color, transform
 from skimage.feature import corner_harris, peak_local_max
+import sys
 
 # load in different images to see where the Harris Corner Detector finds corners
-image = transform.rescale(color.rgb2gray(io.imread("LaddObservatory1.jpg")),0.25)
+image = transform.rescale(color.rgb2gray(io.imread(sys.argv[1])),0.25)
 
 harris_response = corner_harris(image)
 # Note: Feel free to play with these parameters to investigate their effects
