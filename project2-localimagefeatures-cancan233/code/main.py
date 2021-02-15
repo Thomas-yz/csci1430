@@ -10,6 +10,7 @@ import numpy as np
 import scipy.io as scio
 
 import matplotlib
+
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
@@ -22,7 +23,6 @@ import visualize
 from helpers import cheat_interest_points, evaluate_correspondence
 
 
-
 # This script
 # (1) Loads and resizes images
 # (2) Finds interest points in those images                 (you code this)
@@ -30,6 +30,7 @@ from helpers import cheat_interest_points, evaluate_correspondence
 # (4) Finds matching features                               (you code this)
 # (5) Visualizes the matches
 # (6) Evaluates the matches based on ground truth correspondences
+
 
 def load_data(file_name):
     """
@@ -84,6 +85,7 @@ def load_data(file_name):
 
     return image1, image2, eval_file
 
+
 def main():
     """
     Reads in the data,
@@ -96,10 +98,13 @@ def main():
 
     # create the command line parser
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data",
-                        required=True,
-                        choices=["notre_dame","mt_rushmore","e_gaudi"],
-                        help="Either notre_dame, mt_rushmore, or e_gaudi. Specifies which image pair to match")
+    parser.add_argument(
+        "-d",
+        "--data",
+        required=True,
+        choices=["notre_dame", "mt_rushmore", "e_gaudi"],
+        help="Either notre_dame, mt_rushmore, or e_gaudi. Specifies which image pair to match",
+    )
     args = parser.parse_args()
 
     # (1) Load in the data
@@ -133,8 +138,8 @@ def main():
 
     print("Getting interest points...")
 
-    (x1, y1) = student.get_interest_points(image1,feature_width)
-    (x2, y2) = student.get_interest_points(image2,feature_width)
+    (x1, y1) = student.get_interest_points(image1, feature_width)
+    (x2, y2) = student.get_interest_points(image2, feature_width)
 
     # For development and debugging get_features and match_features, you will likely
     # want to use the ta ground truth points, you can comment out the precedeing two
@@ -188,12 +193,25 @@ def main():
 
     print("Matches: " + str(matches.shape[0]))
 
-    num_pts_to_visualize = 50
+    num_pts_to_visualize = 0
 
-    evaluate_correspondence(image1_color, image2_color, eval_file, scale_factor,
-        x1, y1, x2, y2, matches, confidences, num_pts_to_visualize, args.data + '_matches.png')
+    evaluate_correspondence(
+        image1_color,
+        image2_color,
+        eval_file,
+        scale_factor,
+        x1,
+        y1,
+        x2,
+        y2,
+        matches,
+        confidences,
+        num_pts_to_visualize,
+        args.data + "_matches.png",
+    )
 
     return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
