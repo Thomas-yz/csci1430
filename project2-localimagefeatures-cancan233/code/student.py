@@ -60,9 +60,9 @@ def get_interest_points(image, feature_width):
     # 2. Use adaptive non-maximum suppression.
 
     # filter image with narrow guassian fliter for better edge detection
-    sigma = 1.65
+    sigma = 2.0
 
-    filtered_image = filters.gaussian(image, sigma=1.0)
+    filtered_image = filters.gaussian(image, sigma=2.0)
     Iy = filters.sobel_h(filtered_image)
     Ix = filters.sobel_v(filtered_image)
     Ixx = filters.gaussian(Ix * Ix, sigma=sigma)
@@ -75,8 +75,9 @@ def get_interest_points(image, feature_width):
     alpha = 0.04
     R = Ixx * Iyy - Ixy ** 2 - alpha * (Ixx + Iyy) ** 2
     # R = (R - np.min(R)) / (np.max(R) - np.min(R))
-    # mask = R < np.mean(R)
-    # R[mask] = 0
+    R = R / np.linalg.norm(R)
+    threshold = np.percentile(R, [15.0])
+    np.putmask(R, R < threshold, 0)
     interested_points = feature.peak_local_max(
         R,
         min_distance=feature_width // 2,
@@ -84,9 +85,9 @@ def get_interest_points(image, feature_width):
         exclude_border=True,
         num_peaks=2000,
     )
-    # print(len(interested_points))
+
     # interested_points = anms(interested_points, R)
-    # print(len(interested_points))
+
     return interested_points[:, 1], interested_points[:, 0]
 
 
@@ -224,7 +225,7 @@ def get_features(image, x, y, feature_width):
             iy - offset + 1 : iy + offset + 1, ix - offset + 1 : ix + offset + 1
         ]
 
-        split_window_magnitudes = np.array(
+        patch_window_magnitudes = np.array(
             np.split(
                 np.array(np.split(window_magnitudes, 4, axis=1)).reshape(4, -1),
                 4,
@@ -232,7 +233,7 @@ def get_features(image, x, y, feature_width):
             )
         ).reshape(-1, feature_width)
 
-        split_window_orientations = np.array(
+        patch_window_orientations = np.array(
             np.split(
                 np.array(np.split(window_orientations, 4, axis=1)).reshape(4, -1),
                 4,
@@ -241,22 +242,34 @@ def get_features(image, x, y, feature_width):
         ).reshape(-1, feature_width)
         feature = np.zeros(int(feature_width * feature_width * num_bins / 16))
 
-        for subwindow_i in range(split_window_magnitudes.shape[0]):
-            inds = np.digitize(split_window_orientations[subwindow_i], bins)
+        for subwindow_i in range(patch_window_magnitudes.shape[0]):
+            inds = np.digitize(patch_window_orientations[subwindow_i], bins)
             for inds_i in range(num_bins):
                 mask = np.array(inds == inds_i)
                 feature[subwindow_i * num_bins + inds_i] = np.sum(
-                    split_window_magnitudes[subwindow_i].flatten()[mask]
+                    patch_window_magnitudes[subwindow_i].flatten()[mask]
                 )
+                # borrow idea from GLOH descriptor
+                # gradient close to the center orientation contribute more to the bin value
+
+                # feature[subwindow_i * num_bins + inds_i] = np.dot(
+                #     patch_window_magnitudes[subwindow_i].flatten()[mask],
+                #     (
+                #         np.abs(
+                #             patch_window_orientations[subwindow_i].flatten()[mask]
+                #             - (bins[inds_i] + np.pi / (2 * num_bins))
+                #         )
+                #         / (2 * np.pi / num_bins)
+                #     ),
+                # )
 
         feature = feature ** 0.6
         feature_norm = feature / np.linalg.norm(feature)
-        np.putmask(feature_norm, feature_norm < 0.001, 0)
+        threshold = np.percentile(feature_norm, [15.0])
+        np.putmask(feature_norm, feature_norm < threshold, 0)
         feature_norm = feature_norm ** 0.7
         feature_norm_2 = feature_norm / np.linalg.norm(feature_norm)
         features.append(feature_norm_2)
-
-    # construct GLOH descriptor
 
     return np.array(features)
 
@@ -302,6 +315,7 @@ def match_features(im1_features, im2_features):
 
     # BONUS: Using PCA might help the speed (but maybe not the accuracy).
 
+    # PCA analysis to accelerate matching
     # im1_features = PCA(im1_features, 128)
     # im2_features = PCA(im2_features, 128)
 
@@ -317,14 +331,12 @@ def match_features(im1_features, im2_features):
     idx1 = np.sort(D, axis=1)[:, :2]
     nddr1 = idx1[:, 0] / idx1[:, 1]
     confidences1 = 1 - nddr1
-
     closest_ind1 = np.argmin(D, axis=1)
     matches1 = np.stack((np.arange(D.shape[0]), closest_ind1), axis=1)
 
     idx2 = np.sort(D.T, axis=1)[:, :2]
     nddr2 = idx2[:, 0] / idx2[:, 1]
     confidences2 = 1 - nddr2
-
     closest_ind2 = np.argmin(D.T, axis=1)
     matches2 = np.stack((closest_ind2, np.arange(D.T.shape[0])), axis=1)
 
