@@ -193,7 +193,7 @@ def main():
 
     print("Matches: " + str(matches.shape[0]))
 
-    num_pts_to_visualize = 0
+    num_pts_to_visualize = 100
 
     evaluate_correspondence(
         image1_color,

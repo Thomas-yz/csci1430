@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage import filters, feature, img_as_int
+from skimage import color, transform
 from skimage.measure import regionprops
 import math
 
@@ -61,33 +62,39 @@ def get_interest_points(image, feature_width):
 
     # filter image with narrow guassian fliter for better edge detection
     sigma = 2.0
-
-    filtered_image = filters.gaussian(image, sigma=2.0)
-    Iy = filters.sobel_h(filtered_image)
-    Ix = filters.sobel_v(filtered_image)
+    # image = color.rgb2gray(image)
+    rescale = False
+    if image.shape[0] < 1000 and image.shape[1] < 1000:
+        rescale = True
+        image = np.float32(transform.rescale(image, 2))
+    filtered_image = filters.gaussian(image, sigma=sigma)
+    # Iy = filters.sobel_h(filtered_image)
+    # Ix = filters.sobel_v(filtered_image)
+    Iy, Ix = np.gradient(filtered_image)
     Ixx = filters.gaussian(Ix * Ix, sigma=sigma)
     Ixy = filters.gaussian(Ix * Iy, sigma=sigma)
     Iyy = filters.gaussian(Iy * Iy, sigma=sigma)
 
-    # R = det(M) - k(trace(M))^2
+    # R = det(M) - alpha(trace(M))^2
     # det(M) = AB - C^2, where A = filter(Ixx), B = filter(Iyy), C = filter(Ixy)
     # trace(M) = A + B
     alpha = 0.04
     R = Ixx * Iyy - Ixy ** 2 - alpha * (Ixx + Iyy) ** 2
-    # R = (R - np.min(R)) / (np.max(R) - np.min(R))
     R = R / np.linalg.norm(R)
     threshold = np.percentile(R, [15.0])
     np.putmask(R, R < threshold, 0)
     interested_points = feature.peak_local_max(
         R,
         min_distance=feature_width // 2,
-        threshold_abs=1e-6,
+        threshold_abs=2e-6,
         exclude_border=True,
         num_peaks=2000,
     )
 
     # interested_points = anms(interested_points, R)
-
+    # print(interested_points.shape)
+    if rescale:
+        interested_points = interested_points / 2
     return interested_points[:, 1], interested_points[:, 0]
 
 
@@ -201,14 +208,27 @@ def get_features(image, x, y, feature_width):
     if feature_width % 4 != 0:
         raise ValueError("feature_width must be a multiple of 4.")
 
+    if image.shape[0] < 1000 and image.shape[1] < 1000:
+        image = np.float32(transform.rescale(image, 2))
+        x = x * 2
+        y = y * 2
+
     x = np.round(x).astype(int).flatten()
     y = np.round(y).astype(int).flatten()
     num_bins = 8
-    bins = np.arange(0, 2 * np.pi, 2 * np.pi / num_bins)
+    bin_width = 2 * np.pi / num_bins
+    bins = np.arange(-np.pi, np.pi, bin_width)
+
+    # num_mag_bins = 3
+    # mag_bins = np.array([0, 2, 4])
+
+    # image = color.rgb2gray(image)
     filtered_image = filters.gaussian(image, sigma=1.0)
-    Iy = filters.sobel_h(filtered_image)
-    Ix = filters.sobel_v(filtered_image)
-    gradients = np.stack((Iy, Ix), axis=0)
+
+    # Iy = filters.sobel_h(filtered_image)
+    # Ix = filters.sobel_v(filtered_image)
+    # gradients = np.stack((Iy, Ix), axis=0)
+    gradients = np.gradient(filtered_image)
     magnitudes = np.linalg.norm(gradients, axis=0)
     orientations = np.arctan2(gradients[0], gradients[1])
     offset = feature_width // 2
@@ -241,31 +261,55 @@ def get_features(image, x, y, feature_width):
             )
         ).reshape(-1, feature_width)
         feature = np.zeros(int(feature_width * feature_width * num_bins / 16))
-
-        for subwindow_i in range(patch_window_magnitudes.shape[0]):
+        # feature = []
+        for subwindow_i in range(len(patch_window_magnitudes)):
             inds = np.digitize(patch_window_orientations[subwindow_i], bins)
             for inds_i in range(num_bins):
                 mask = np.array(inds == inds_i)
                 feature[subwindow_i * num_bins + inds_i] = np.sum(
                     patch_window_magnitudes[subwindow_i].flatten()[mask]
                 )
-                # borrow idea from GLOH descriptor
-                # gradient close to the center orientation contribute more to the bin value
 
+                # HOG descriptor
+                # gradient close to the center orientation contribute more to the bin value
                 # feature[subwindow_i * num_bins + inds_i] = np.dot(
                 #     patch_window_magnitudes[subwindow_i].flatten()[mask],
-                #     (
+                #     np.cos(
                 #         np.abs(
                 #             patch_window_orientations[subwindow_i].flatten()[mask]
-                #             - (bins[inds_i] + np.pi / (2 * num_bins))
+                #             - (bins[inds_i] + bin_width / 2)
                 #         )
-                #         / (2 * np.pi / num_bins)
                 #     ),
                 # )
 
+                # GLOH-like descriptor, still not finished.
+                # To use this descriptor, you will need to uncomment previous lines, which defines num_mag_bins, mag_bins and feature(as a empty list) and following line which transform feature back to np.array
+
+                # sub_inds = np.digitize(
+                #     patch_window_magnitudes[subwindow_i][mask], mag_bins
+                # )
+                # for sub_inds_i in range(num_mag_bins):
+                #     sub_mask = np.array(sub_inds == sub_inds_i)
+                #     feature.append(
+                #         np.dot(
+                #             patch_window_magnitudes[subwindow_i].flatten()[mask][
+                #                 sub_mask
+                #             ],
+                #             np.cos(
+                #                 np.abs(
+                #                     patch_window_orientations[subwindow_i].flatten()[
+                #                         mask
+                #                     ][sub_mask]
+                #                     - (bins[inds_i] + bin_width / 2)
+                #                 )
+                #             ),
+                #         )
+                #     )
+
+        # feature = np.array(feature)
         feature = feature ** 0.6
         feature_norm = feature / np.linalg.norm(feature)
-        threshold = np.percentile(feature_norm, [15.0])
+        threshold = np.percentile(feature_norm, [20.0])
         np.putmask(feature_norm, feature_norm < threshold, 0)
         feature_norm = feature_norm ** 0.7
         feature_norm_2 = feature_norm / np.linalg.norm(feature_norm)
@@ -316,8 +360,9 @@ def match_features(im1_features, im2_features):
     # BONUS: Using PCA might help the speed (but maybe not the accuracy).
 
     # PCA analysis to accelerate matching
-    # im1_features = PCA(im1_features, 128)
-    # im2_features = PCA(im2_features, 128)
+
+    # im1_features = PCA(im1_features, 32)
+    # im2_features = PCA(im2_features, 32)
 
     # D = sqrt(F1^2 + F2^2 - 2 * F1 * F2)
     B = 2 * np.matmul(im1_features, im2_features.transpose())
@@ -349,12 +394,11 @@ def match_features(im1_features, im2_features):
 
 
 def PCA(features, m):
-    M = np.mean(features.T, axis=1)
-    C = features - M
+    C = features - np.mean(features, axis=0)
     cov_matrix = np.cov(C.T)
     eigenvals, eigenvecs = np.linalg.eig(cov_matrix)
-    i = np.argsort(eigenvals)[::-1]
-    eigenvecs = eigenvecs[:, i]
+    i = np.argsort(-1 * np.abs(eigenvals))
+    eigenvecs = eigenvecs[i]
     eigenvals = eigenvals[i]
-    pca_features = np.dot(C, eigenvecs[:m])
-    return pca_features
+    pca_features = np.dot(eigenvecs.T, C.T)
+    return pca_features[:m].T

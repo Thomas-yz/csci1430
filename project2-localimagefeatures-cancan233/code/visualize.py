@@ -31,6 +31,10 @@ def show_correspondences(imgA, imgB, X1, Y1, X2, Y2, matches, good_matches, numb
 	plot_matches(ax, imgA, imgB, kp1, kp2, matches[np.logical_not(good_matches)], matches_color='orangered')
 	plot_matches(ax, imgA, imgB, kp1, kp2, matches[good_matches], matches_color='springgreen')
 
+	# plot_matches(ax, imgA, imgB, kp1, kp2, matches[np.logical_not(good_matches)], matches_color='orangered', only_matches=True)
+	# plot_matches(ax, imgA, imgB, kp1, kp2, matches[good_matches], matches_color='springgreen', only_matches=True)
+
+
 	fig = plt.gcf()
 	plt.show()
 
