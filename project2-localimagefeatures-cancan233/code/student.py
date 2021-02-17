@@ -81,7 +81,7 @@ def get_interest_points(image, feature_width):
     alpha = 0.04
     R = Ixx * Iyy - Ixy ** 2 - alpha * (Ixx + Iyy) ** 2
     R = R / np.linalg.norm(R)
-    threshold = np.percentile(R, [15.0])
+    threshold = np.percentile(R, [60.0])
     np.putmask(R, R < threshold, 0)
     interested_points = feature.peak_local_max(
         R,
@@ -92,15 +92,14 @@ def get_interest_points(image, feature_width):
     )
 
     # interested_points = anms(interested_points, R)
-    # print(interested_points.shape)
     if rescale:
         interested_points = interested_points / 2
     return interested_points[:, 1], interested_points[:, 0]
 
 
-def anms(points, harris_response, top=500):
+def anms(points, R, top=500):
     l, x, y = [], 0, 0
-    threshold = np.mean(harris_response)
+    threshold = np.mean(R)
     while x < len(points):
         minpoint = float("inf")
         xi, yi = points[x][0], points[x][1]
@@ -109,10 +108,9 @@ def anms(points, harris_response, top=500):
             if (
                 xi != xj
                 and yi != yj
-                and harris_response[points[x][0], points[x][1]] > threshold
-                and harris_response[points[y][0], points[y][1]] > threshold
-                and harris_response[points[x][0], points[x][1]]
-                < harris_response[points[y][0], points[y][1]] * 0.9
+                and R[points[x][0], points[x][1]] > threshold
+                and R[points[y][0], points[y][1]] > threshold
+                and R[points[x][0], points[x][1]] < R[points[y][0], points[y][1]] * 0.9
             ):
                 dist = math.sqrt((xj - xi) ** 2 + (yj - yi) ** 2)
                 if dist < minpoint:
@@ -219,9 +217,6 @@ def get_features(image, x, y, feature_width):
     bin_width = 2 * np.pi / num_bins
     bins = np.arange(-np.pi, np.pi, bin_width)
 
-    # num_mag_bins = 3
-    # mag_bins = np.array([0, 2, 4])
-
     # image = color.rgb2gray(image)
     filtered_image = filters.gaussian(image, sigma=1.0)
 
@@ -260,56 +255,72 @@ def get_features(image, x, y, feature_width):
                 axis=1,
             )
         ).reshape(-1, feature_width)
-        feature = np.zeros(int(feature_width * feature_width * num_bins / 16))
-        # feature = []
-        for subwindow_i in range(len(patch_window_magnitudes)):
-            inds = np.digitize(patch_window_orientations[subwindow_i], bins)
-            for inds_i in range(num_bins):
-                mask = np.array(inds == inds_i)
-                feature[subwindow_i * num_bins + inds_i] = np.sum(
-                    patch_window_magnitudes[subwindow_i].flatten()[mask]
-                )
 
-                # HOG descriptor
-                # gradient close to the center orientation contribute more to the bin value
-                # feature[subwindow_i * num_bins + inds_i] = np.dot(
-                #     patch_window_magnitudes[subwindow_i].flatten()[mask],
-                #     np.cos(
-                #         np.abs(
-                #             patch_window_orientations[subwindow_i].flatten()[mask]
-                #             - (bins[inds_i] + bin_width / 2)
-                #         )
-                #     ),
-                # )
+        # descriptor_type: "SIFT",  "HOG", "GLOH"
+        descriptor_type = "HOG"
 
-                # GLOH-like descriptor, still not finished.
-                # To use this descriptor, you will need to uncomment previous lines, which defines num_mag_bins, mag_bins and feature(as a empty list) and following line which transform feature back to np.array
+        if descriptor_type == "SIFT":
+            feature = np.zeros(int(feature_width * feature_width * num_bins / 16))
+            for subwindow_i in range(len(patch_window_magnitudes)):
+                inds = np.digitize(patch_window_orientations[subwindow_i], bins)
+                for inds_i in range(num_bins):
+                    mask = np.array(inds == inds_i)
+                    feature[subwindow_i * num_bins + inds_i] = np.sum(
+                        patch_window_magnitudes[subwindow_i].flatten()[mask]
+                    )
 
-                # sub_inds = np.digitize(
-                #     patch_window_magnitudes[subwindow_i][mask], mag_bins
-                # )
-                # for sub_inds_i in range(num_mag_bins):
-                #     sub_mask = np.array(sub_inds == sub_inds_i)
-                #     feature.append(
-                #         np.dot(
-                #             patch_window_magnitudes[subwindow_i].flatten()[mask][
-                #                 sub_mask
-                #             ],
-                #             np.cos(
-                #                 np.abs(
-                #                     patch_window_orientations[subwindow_i].flatten()[
-                #                         mask
-                #                     ][sub_mask]
-                #                     - (bins[inds_i] + bin_width / 2)
-                #                 )
-                #             ),
-                #         )
-                #     )
+        if descriptor_type == "HOG":
+            # HOG descriptor
+            # gradient close to the center orientation contribute more to the bin value
+            feature = np.zeros(int(feature_width * feature_width * num_bins / 16))
+            for subwindow_i in range(len(patch_window_magnitudes)):
+                inds = np.digitize(patch_window_orientations[subwindow_i], bins)
+                for inds_i in range(num_bins):
+                    mask = np.array(inds == inds_i)
+                    feature[subwindow_i * num_bins + inds_i] = np.dot(
+                        patch_window_magnitudes[subwindow_i].flatten()[mask],
+                        np.cos(
+                            np.abs(
+                                patch_window_orientations[subwindow_i].flatten()[mask]
+                                - (bins[inds_i] + bin_width / 2)
+                            )
+                        ),
+                    )
 
-        # feature = np.array(feature)
+        if descriptor_type == "GLOH":
+            # GLOH-like descriptor.
+            num_mag_bins = 3
+            mag_bins = np.array([0, 2, 4])
+            feature = []
+            for subwindow_i in range(len(patch_window_magnitudes)):
+                inds = np.digitize(patch_window_orientations[subwindow_i], bins)
+                for inds_i in range(num_bins):
+                    mask = np.array(inds == inds_i)
+                    sub_inds = np.digitize(
+                        patch_window_magnitudes[subwindow_i][mask], mag_bins
+                    )
+                    for sub_inds_i in range(num_mag_bins):
+                        sub_mask = np.array(sub_inds == sub_inds_i)
+                        feature.append(
+                            np.dot(
+                                patch_window_magnitudes[subwindow_i].flatten()[mask][
+                                    sub_mask
+                                ],
+                                np.cos(
+                                    np.abs(
+                                        patch_window_orientations[
+                                            subwindow_i
+                                        ].flatten()[mask][sub_mask]
+                                        - (bins[inds_i] + bin_width / 2)
+                                    )
+                                ),
+                            )
+                        )
+                        feature = np.array(feature)
+
         feature = feature ** 0.6
         feature_norm = feature / np.linalg.norm(feature)
-        threshold = np.percentile(feature_norm, [20.0])
+        threshold = np.percentile(feature_norm, [60.0])
         np.putmask(feature_norm, feature_norm < threshold, 0)
         feature_norm = feature_norm ** 0.7
         feature_norm_2 = feature_norm / np.linalg.norm(feature_norm)
