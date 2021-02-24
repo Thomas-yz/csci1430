@@ -93,30 +93,30 @@ should be on this page
 
 \section*{Instructions}
 \begin{itemize}
-  \item 6 questions.
-  \item Write code where appropriate; feel free to include images or equations.
-  \item Please make this document anonymous.
-  \item This assignment is \textbf{fixed length}, and the pages have been assigned for you in Gradescope. As a result, \textbf{please do NOT add any new pages}. We will provide ample room for you to answer the questions. If you \emph{really} wish for more space, please add a page \emph{at the end of the document}.
-  \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
+    \item 6 questions.
+    \item Write code where appropriate; feel free to include images or equations.
+    \item Please make this document anonymous.
+    \item This assignment is \textbf{fixed length}, and the pages have been assigned for you in Gradescope. As a result, \textbf{please do NOT add any new pages}. We will provide ample room for you to answer the questions. If you \emph{really} wish for more space, please add a page \emph{at the end of the document}.
+    \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
 \end{itemize}
 
 \section*{Questions}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\paragraph{Q1:} 
+\paragraph{Q1:}
 
 \begin{enumerate} [(a)]
     \item Define these common terms in machine learning:
-    \begin{enumerate} [(i)]
-    \item Bias
-    \item Variance
-    \end{enumerate}
+          \begin{enumerate} [(i)]
+              \item Bias
+              \item Variance
+          \end{enumerate}
     \item Define these terms in the context of evaluating a classifier:
-    \begin{enumerate} [(i)]
-    \item Overfitting
-    \item Underfitting
-    \end{enumerate}
+          \begin{enumerate} [(i)]
+              \item Overfitting
+              \item Underfitting
+          \end{enumerate}
     \item How do overfitting and underfitting relate to bias and variance?
 \end{enumerate}
 
@@ -127,35 +127,35 @@ should be on this page
 \paragraph{A1:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
-%     \begin{enumerate} [(i)]
-%     \item 
-%     \item
-%     \end{enumerate}
+    \item Assume there is a relationship between $Y$ and $X$: \(Y = f(X) + constant\) and $\hat{f}(X)$ is the model for $Y$.
+          \begin{enumerate} [(i)]
+              \item Bias is the difference between the mean of predictions of the model and the correct mean of the targets. i.e. \(bias = E[\hat{f}(X)] - f(X)\)
+              \item Variance represents the variability of model predictions for a given data point. It is used to estimate of the target function will change if different training data was used. i.e. \(variance = E[(\hat{f}(X) - E[\hat{f}(X)])^2]\)
+          \end{enumerate}
 
-% \item 
-%     \begin{enumerate} [(i)]
-%     \item 
-%     \item
-%     \end{enumerate}
-% \item 
+    \item
+          \begin{enumerate} [(i)]
+              \item Overfitting is the case where the model performs well on training dataset but poor on test dataset. It means that the generalization of the model is unreliable.
+              \item Underfitting is the case where the model performs poor both on training dataset and test dataset, meaning that the model has "not learned enough" from the training data, resulting in low generalization and unrealiable predictions.
+          \end{enumerate}
+    \item Overfitting has low bias and high variance. The low bias is because the model can predict close value to the training data. But add new data points can change the model much, which results in high variance. For overfitting, it has high bias but low variance because it predicts poor compared to training data but won't change too much when add new points.
 
-% \end{enumerate}
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pagebreak
-\paragraph{Q2:} Suppose we create a visual word dictionary using SIFT and k-means clustering for a scene recognition algorithm. Examining the SIFT features generated from our training database, we see that many are almost equidistant from two or more visual words. 
+\paragraph{Q2:} Suppose we create a visual word dictionary using SIFT and k-means clustering for a scene recognition algorithm. Examining the SIFT features generated from our training database, we see that many are almost equidistant from two or more visual words.
 \begin{enumerate}[(a)]
-    \item 
-    Why might this affect classification accuracy?
+    \item
+          Why might this affect classification accuracy?
 
     \item
-    Given the situation, describe \emph{two} methods to improve classification accuracy, and explain why they would help.\\ 
-    \emph{These can be for k-means, or otherwise.}
+          Given the situation, describe \emph{two} methods to improve classification accuracy, and explain why they would help.\\
+          \emph{These can be for k-means, or otherwise.}
 
 \end{enumerate}
 
@@ -164,13 +164,20 @@ should be on this page
 \paragraph{A2:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+    \item If the SIFT features are equidistant from two or more words, it would be difficult to categorize words based upon Euclidean distance. In this case, small difference in distance will result in different catorgary and thus, classification accuracy will be decreased.
 
-% \item 
+    \item \begin{itemize}
+              \item One solution is changing the $k$ value. This will increase the number of words and hence might break the features that are quidistant to previous words.
+              \item Another solution for improved clustering would amplify distances corresponding to regions of input space near cluster boudaries and attenuate distances corresponding to regions of input space further away from cluster boundaries[1]. The effect of such a range transformation would make clusters more compact and well separated thus resulting in better clustering performance.
+          \end{itemize}
 
-% \end{enumerate}
+          [1] Sharma, Piyush Kumar, and Gary Holness. "$L^{2} $ L2-norm transformation for improving k-means clustering." International Journal of Data Science and Analytics 3, no. 4 (2017): 247-266.
+
+          %   \textcolor{red}{Use cosine similarity. Use another descriptor to construct feature vector.}
+
+\end{enumerate}
 
 
 
@@ -179,24 +186,25 @@ should be on this page
 \pagebreak
 \paragraph{Q3:} The way that the bag of words representation handles the spatial layout of visual information can be both an advantage and a disadvantage.
 \begin{enumerate}[(a)]
-\item Describe an example scenario for each of these cases.
-\item Describe a modification or additional algorithm which might\\overcome the disadvantage.
+    \item Describe an example scenario for each of these cases.
+    \item Describe a modification or additional algorithm which might overcome the disadvantage.
 
-\item How might we determine whether bag of words is a good model?
+    \item How might we determine whether bag of words is a good model?
 \end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A3:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+    \item Adavantage: when the spatial information is not needed in the word clustering, i.e. the image might not include spatial information.\\
+          Disadvantage: when the images need have the same color histogram, e.g. the examples shown in lecture, the spatial information is needed for better construction of bag of words.
 
-% \item 
+    \item One possible modification could be using the spatial pyramid representation. The image will be converted to several levels of resolution to construct the locally orderless representations. In this way, the spatial layout information of the image will be included in the bag of words representation.
 
-% \item 
+    \item To determine whether the model is good or not, we could use precision and recall to evaluate its quality. For example, the bag of words representations are constructed using target image. And we will calculate the precision and recall values for the similar images that the model returns. The model with high precision and low recall is a good model.
 
-% \end{enumerate}
+\end{enumerate}
 
 
 
@@ -210,19 +218,19 @@ Data bias affects machine learning, and recent national news has highlighted dat
 In Project 3, we will train a scene recognition model using data from Lazebnik et al.~2006. Please review its data to check for biases: observe image samples in the data/train and data/test directories and consider their class labels.
 
 \begin{enumerate}[(a)]
-\item Does this dataset contain potentially harmful biases? If so, describe them and why they might be harmful. (3--4 sentences.)
+    \item Does this dataset contain potentially harmful biases? If so, describe them and why they might be harmful. (3--4 sentences.)
 \end{enumerate}
 
 Releasing a dataset publicly can caused it to be used in unforeseen applications or by unforeseen actors.
 
 \begin{enumerate}[(b)]
-\item Describe a use of this scene dataset that may have been unanticipated. How might this reveal other overlooked biases? (3--4 sentences.)
+    \item Describe a use of this scene dataset that may have been unanticipated. How might this reveal other overlooked biases? (3--4 sentences.)
 \end{enumerate}
 
 Please read the following two short articles: \href{https://www.theverge.com/2019/6/11/18661128/ai-object-recognition-algorithms-bias-worse-household-items-lower-income-countries}{Article 1} and \href{https://arxiv.org/pdf/1711.08536.pdf}{Article 2}.
 
 \begin{enumerate}[(c)]
-\item Do these articles change your answers? Why or why not? (2--3 sentences).
+    \item Do these articles change your answers? Why or why not? (2--3 sentences).
 \end{enumerate}
 
 \emph{Please answer overleaf.}
@@ -232,15 +240,13 @@ Please read the following two short articles: \href{https://www.theverge.com/201
 \paragraph{A4:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+    \item Yes, this dataset contains potentially harmful biases. For example, in highway catorgary, if in the training dataset, the number of images without cars are more than images with cars, it would be easier for the classifier to detect the images without cars is in highway catorgary than the images with cars.
+    \item As the dataset includes scences such as bedroom, kitchen and living rooms, where might include some privacy information for the people living there, it could be used to analyze the living behavior of people. This can also cause bia as the images might come from certain countries and with such dataset, the model would perform poor in images taken in other countries or other cultures.
+    \item No, these articles prove my answers. Analyzing the standard open source data sets such as ImageNet shows the poor distribution in geo-diversity. The geo-diversity, the income-level for different households, differences among different culture and countries will all contribute to the bias in the training dataset, which at last will make the model biased. The training dataset often reflects the life and backgound of the engineers responsible.
 
-% \item 
-
-% \item 
-
-% \end{enumerate}
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -250,7 +256,7 @@ Please read the following two short articles: \href{https://www.theverge.com/201
 \pagebreak
 \paragraph{Q5:} Given a linear classifier such as SVM which separates two classes (binary decision), how might we use multiple linear classifiers to create a new classifier which separates $k$ classes?
 
-Below, we provide pseudocode for a linear classifier. It trains a model on a training set, and then classifies a new test example into one of two classes. Please edit the pseudo-code to convert this into a multi-class classifier. 
+Below, we provide pseudocode for a linear classifier. It trains a model on a training set, and then classifies a new test example into one of two classes. Please edit the pseudo-code to convert this into a multi-class classifier.
 
 \emph{Hints:} See slides in supervised learning crash course deck, plus your own research. You can take either the one vs.~all (or one vs.~others) approach or the one vs.~one approach in the slides; please declare which approach you take.
 
@@ -262,31 +268,40 @@ Below, we provide pseudocode for a linear classifier. It trains a model on a tra
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
-\paragraph{A5:} Your answer here.
-
+\paragraph{A5:} Your answer here. \\
+Here I use one v.s. others approach for multi-class classifications.
 \begin{python}
-# Inputs
-#   train_feats: N x d matrix of N features each d descriptor long
-#   train_labels: N x 1 array containing values of either -1 (class 0) or 1 (class 1)
-#   test_feat: 1 x d image for which we wish to predict a label
-#
-# Outputs
-#   -1 (class 0) or 1 (class 1)
-#
-# Please turn this into a multi-class classifier for k classes.
-# Inputs:
-#    As before, except
-#    train_labels: N x 1 array of class label integers from 0 to k-1
-# Outputs:
-#    A class label integer from 0 to k-1
-#
-def classify(train_feats, train_labels, test_feat)
-    # Train classification hyperplane
-    weights, bias = train_linear_classifier(train_feats, train_label)
-    # Compute distance from hyperplane
-    test_score = weights * test_feats + bias
+    # Inputs
+    #   train_feats: N x d matrix of N features each d descriptor long
+    #   train_labels: N x 1 array containing values of either -1 (class 0) or 1 (class 1)
+    #   test_feat: 1 x d image for which we wish to predict a label
+    #
+    # Outputs
+    #   -1 (class 0) or 1 (class 1)
+    #
+    # Please turn this into a multi-class classifier for k classes.
+    # Inputs:
+    #    As before, except
+    #    train_labels: N x 1 array of class label integers from 0 to k-1
+    # Outputs:
+    #    A class label integer from 0 to k-1
+    #
 
-    return 1 if test_score > 0 else -1
+    import numpy as np
+    import copy
+
+    def classify(train_feats, train_labels, test_feat):
+    # Train classification hyperplane
+    weights, bias = np.zeros(d, k), np.zeros(k)
+    for i in range(k):
+        single_train_label = copy.deepcopy(train_label)
+        single_train_label[train_label != i] = 0
+        single_train_label[train_label == i] = 1
+        weights[:, i], bias[i] = train_linear_classifier(train_feats, single_train_label)
+    # Compute distance from hyperplane
+    test_score = test_feats * weights + bias
+
+    return np.argmax(test_score)
 \end{python}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -296,7 +311,7 @@ def classify(train_feats, train_labels, test_feat)
 
 \paragraph{Q6:} In Project 3, we will use a feature descriptor called HOG---`Histogram of Oriented Gradients'. As its name implies, it works similarly to SIFT. In classification, we might extract HOG features across the entire image (not just at corners) to create visual words.
 
-HOG creates a feature descriptor per image `block'. Each block is split into `cells' covering pixels. HOG outputs a 9-bin histogram of oriented gradients per cell. We append these together to obtain the feature descriptor for each block. As a result, if we have $(z,z)$ cells per block, the feature descriptor for each block will be of size $z \times z \times 9$. 
+HOG creates a feature descriptor per image `block'. Each block is split into `cells' covering pixels. HOG outputs a 9-bin histogram of oriented gradients per cell. We append these together to obtain the feature descriptor for each block. As a result, if we have $(z,z)$ cells per block, the feature descriptor for each block will be of size $z \times z \times 9$.
 
 \emph{Blocks can overlap as displayed in the diagram below.}
 %
@@ -307,33 +322,33 @@ HOG creates a feature descriptor per image `block'. Each block is split into `ce
 When using HOG, the parameters such as pixels per cell and cells per block impact the resulting feature descriptor and so our performance on a classification task.
 
 \begin{enumerate}[(a)]
-\item Given a \colorbox{lightgray}{$72\times72$} image, calculate the number of cells, blocks, and feature vector size that will occur when we extract HOG features with the following parameters.
+    \item Given a \colorbox{lightgray}{$72\times72$} image, calculate the number of cells, blocks, and feature vector size that will occur when we extract HOG features with the following parameters.
 
-Scenario 1: Pixels per cell = \colorbox{lightgray}{$4\times4$}, cells per block = \colorbox{lightgray}{$4\times4$} % (\emph{like in SIFT!}). 
-\\
-\emph{Calculate:}
-\\ 
-Number of cells: 
-\\
-Number of blocks: 
-\\
-Dimensions of resulting feature descriptor: 
-\\
+          Scenario 1: Pixels per cell = \colorbox{lightgray}{$4\times4$}, cells per block = \colorbox{lightgray}{$4\times4$} % (\emph{like in SIFT!}). 
+          \\
+          \emph{Calculate:}
+          \\
+          Number of cells:
+          \\
+          Number of blocks:
+          \\
+          Dimensions of resulting feature descriptor:
+          \\
 
-Scenario 2: Pixels per cell = \colorbox{lightgray}{$8\times8$}, cells per block = \colorbox{lightgray}{$2\times2$}.
-\\
-\emph{Calculate:}
-\\ 
-Number of cells:
-\\
-Number of blocks: 
-\\
-Dimensions of resulting feature descriptor: 
+          Scenario 2: Pixels per cell = \colorbox{lightgray}{$8\times8$}, cells per block = \colorbox{lightgray}{$2\times2$}.
+          \\
+          \emph{Calculate:}
+          \\
+          Number of cells:
+          \\
+          Number of blocks:
+          \\
+          Dimensions of resulting feature descriptor:
 
 
-\item What are the pros and cons of the two parameter combinations? Which might you expect to have better performance?
+    \item What are the pros and cons of the two parameter combinations? Which might you expect to have better performance?
 
-\emph{Note: You may find it useful to look at the thesis of Navneet Dalal (co-inventor of HOG) for more on this topic. \href{http://lear.inrialpes.fr/people/dalal/NavneetDalalThesis.pdf}{[Link to thesis]} (pages 39, 41 in Section 4.3).}
+          \emph{Note: You may find it useful to look at the thesis of Navneet Dalal (co-inventor of HOG) for more on this topic. \href{http://lear.inrialpes.fr/people/dalal/NavneetDalalThesis.pdf}{[Link to thesis]} (pages 39, 41 in Section 4.3).}
 
 \end{enumerate}
 
@@ -345,25 +360,40 @@ Dimensions of resulting feature descriptor:
 \paragraph{A6:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% a)
-% Scenario 1:
-% \\ 
-% Number of cells: 
-% \\
-% Number of blocks: 
-% \\
-% Dimensions of resulting feature descriptor: 
-% \\
+\begin{enumerate}[(a)]
+    \item Scenario 1:
+          \\
+          Number of cells: 324
+          \\
+          Number of blocks: 225
+          \\
+          Dimensions of resulting feature descriptor: 32400
+          \\
 
 
-% Scenario 2:
-% \\ 
-% Number of cells: 
-% \\
-% Number of blocks: 
-% \\
-% Dimensions of resulting feature descriptor: 
-% \\
+          Scenario 2:
+          \\
+          Number of cells: 81
+          \\
+          Number of blocks: 64
+          \\
+          Dimensions of resulting feature descriptor: 2304
+          \\
+
+    \item Scenario 1: \\
+          Pros: contains more information from the image. \\
+          Cons: \begin{itemize}
+              \item too many dimensions for the feature, which can be slow for following operations such as matching, clustering, etc.
+              \item adaptivity to local imaging conditions is weakened as the block is bigger.
+          \end{itemize}
+          Scenario 2: \\
+          Pros: proper number of dimensions of the featrue. \\
+          Cons: can miss some important local information in the image. \\
+
+
+          Comparing these two combinations, the number of cells for Scenario 1 is more than the number of cells in Scenario 2 while the numbers of blocks are the same for both Scenarios. This results in feature in Scenario 1 has more dimensions than the feature in Scenario 2. According to the reference, Navneet Dalal's thesis, the second one might has better performance. They found that 6-8 pixel wide cells do best irrespective of the block size and $2\times 2$ and $3\times 3$ cell blocks work best.
+\end{enumerate}
+
 
 
 % What are the pros and cons of the two parameter combinations? Which might you expect to have better performance?

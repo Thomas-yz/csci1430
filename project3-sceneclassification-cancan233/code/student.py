@@ -1,15 +1,22 @@
 import numpy as np
 import matplotlib
 import time
+
+from skimage import feature
+from sklearn import cluster
 from helpers import progressbar
 from skimage.io import imread
 from skimage.color import rgb2grey
 from skimage.feature import hog
 from skimage.transform import resize
 from scipy.spatial.distance import cdist
+from scipy.stats import mode
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.svm import LinearSVC
+
 
 def get_tiny_images(image_paths):
-    '''
+    """
     This feature is inspired by the simple tiny images used as features in
     80 million tiny images: a large dataset for non-parametric object and
     scene recognition. A. Torralba, R. Fergus, W. T. Freeman. IEEE
@@ -37,14 +44,19 @@ def get_tiny_images(image_paths):
 
     Suggested functions: skimage.transform.resize, skimage.color.rgb2grey,
                          skimage.io.imread, np.reshape
-    '''
+    """
 
-    #TODO: Implement this function!
+    # TODO: Implement this function!
+    outputs = []
+    for image_path in image_paths:
+        image = imread(image_path, as_gray=True)
+        image = resize(image, (16, 16))
+        outputs.append(image.flatten())
+    return np.array(outputs)
 
-    return np.array([])
 
 def build_vocabulary(image_paths, vocab_size):
-    '''
+    """
     This function should sample HOG descriptors from the training images,
     cluster them with kmeans, and then return the cluster centers.
 
@@ -106,24 +118,39 @@ def build_vocabulary(image_paths, vocab_size):
     absolutely massive vocabulary. That would make matching inefficient AND
     inaccurate! So we use K Means clustering to find a much smaller (vocab_size)
     number of representative points. We recommend using sklearn.cluster.KMeans
-    (or sklearn.cluster.MiniBatchKMeans if KMeans takes to long for you) to do this. 
-    Note that this can take a VERY LONG TIME to complete (upwards of ten minutes 
+    (or sklearn.cluster.MiniBatchKMeans if KMeans takes to long for you) to do this.
+    Note that this can take a VERY LONG TIME to complete (upwards of ten minutes
     for large numbers of features and large max_iter), so set the max_iter argument
     to something low (we used 100) and be patient. You may also find success setting
     the "tol" argument (see documentation for details)
-    '''
+    """
 
-    #TODO: Implement this function!
-    
+    # TODO: Implement this function!
+    # vocab_size = 50
     num_imgs = len(image_paths)
-    
-    for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
-        pass
+    features = []
+    pixels_per_cell_dim = 8
+    cells_per_block_dim = 2
+    # for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
+    for i in range(num_imgs):
+        image = imread(image_paths[i], as_gray=True)
+        features.extend(
+            hog(
+                image,
+                orientations=9,
+                pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
+                cells_per_block=(cells_per_block_dim, cells_per_block_dim),
+                feature_vector=True,
+            ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
+        )
+    features = np.array(features)
+    kmeans = MiniBatchKMeans(n_clusters=vocab_size, max_iter=200).fit(features)
+    vocab = kmeans.cluster_centers_
+    return vocab
 
-    return np.array([])
 
 def get_bags_of_words(image_paths):
-    '''
+    """
     This function should take in a list of image paths and calculate a bag of
     words histogram for each image, then return those histograms in an array.
 
@@ -150,17 +177,37 @@ def get_bags_of_words(image_paths):
 
     Suggested functions: scipy.spatial.distance.cdist, np.argsort,
                          np.linalg.norm, skimage.feature.hog
-    '''
+    """
 
-    vocab = np.load('vocab.npy')
-    print('Loaded vocab from file.')
+    vocab = np.load("vocab.npy")
+    print("Loaded vocab from file.")
 
-    #TODO: Implement this function!
+    # TODO: Implement this function!
+    num_imgs = len(image_paths)
+    output = []
+    pixels_per_cell_dim = 8
+    cells_per_block_dim = 2
+    # for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
+    for i in range(num_imgs):
+        image = imread(image_paths[i], as_gray=True)
+        feature = hog(
+            image,
+            orientations=9,
+            pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
+            cells_per_block=(cells_per_block_dim, cells_per_block_dim),
+            feature_vector=True,
+        ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
+        distance = cdist(feature, vocab, "euclidean")
+        vocab_idx = np.append(np.argmax(distance, axis=1), len(vocab) - 1)
+        labels = np.bincount(vocab_idx)
+        labels[-1] -= 1
+        labels = labels / np.linalg.norm(labels)
+        output.append(labels)
+    return np.array(output)
 
-    return np.array([])
 
 def svm_classify(train_image_feats, train_labels, test_image_feats):
-    '''
+    """
     This function will predict a category for every test image by training
     15 many-versus-one linear SVM classifiers on the training data, then
     using those learned classifiers on the testing data.
@@ -180,14 +227,17 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
     We suggest you look at the sklearn.svm module, including the LinearSVC
     class. With the right arguments, you can get a 15-class SVM as described
     above in just one call! Be sure to read the documentation carefully.
-    '''
+    """
 
     # TODO: Implement this function!
+    svm_model = LinearSVC(tol=1e-05)
+    svm_model.fit(train_image_feats, train_labels)
+    labels = svm_model.predict(test_image_feats)
+    return labels
 
-    return np.array([])
 
 def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats):
-    '''
+    """
     This function will predict the category for every test image by finding
     the training image with most similar features. You will complete the given
     partial implementation of k-nearest-neighbors such that for any arbitrary
@@ -223,18 +273,39 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
 
     Useful functions:
         scipy.spatial.distance.cdist, np.argsort, scipy.stats.mode
-    '''
+    """
 
     k = 1
 
     # Gets the distance between each test image feature and each train image feature
     # e.g., cdist
-    distances = cdist(test_image_feats, train_image_feats, 'euclidean')
+    distances = cdist(test_image_feats, train_image_feats, "euclidean")
 
-    #TODO:
+    # TODO:
     # 1) Find the k closest features to each test image feature in euclidean space
     # 2) Determine the labels of those k features
     # 3) Pick the most common label from the k
     # 4) Store that label in a list
 
-    return np.array([])
+    k = 20
+    #################### baseline vote ##############
+    nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
+    nearest_neighbor_labels = np.array(train_labels)[nearest_neighbor_idx]
+    labels = mode(nearest_neighbor_labels, axis=1)[0]
+
+    #################### A more advanced version uses weighted votes ##############
+    # m = test_image_feats.shape[0]
+    # distances_labels = np.tile(train_labels, (m, 1))
+    # k_nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
+    # k_nearest_distances = np.take_along_axis(distances, k_nearest_neighbor_idx, axis=1)
+    # k_labels = np.take_along_axis(distances_labels, k_nearest_neighbor_idx, axis=1)
+    # weights = 1 / (k_nearest_distances + 1e-8)
+    # weights /= np.sum(weights, axis=1)[:, np.newaxis]
+    # unique_labels = np.array(list(set(train_labels)))
+    # votes = np.zeros((m, len(unique_labels)))
+    # for i in range(len(unique_labels)):
+    #     votes[:, i] = np.sum(np.where(k_labels == unique_labels[i], weights, 0), axis=1)
+    # labels_idx = np.argmax(votes, axis=1)
+    # labels = unique_labels[labels_idx]
+
+    return labels
