@@ -140,62 +140,30 @@ def build_vocabulary(image_paths, vocab_size):
     # TODO: Implement this function!
     # vocab_size = 50
     num_imgs = len(image_paths)
-    # features = []
-    # pixels_per_cell_dim = 8
-    # cells_per_block_dim = 2
-
-    # kernels = []
-    # for theta in range(8):
-    #     theta = theta / 8.0 * np.pi
-    #     for frequency in (0.1, 0.2, 0.3, 0.4):
-    #         kernels.append(np.real(gabor_kernel(frequency=frequency, theta=theta)))
-
     images = []
-    # for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
     for i in range(num_imgs):
-        # for i in tqdm(range(num_imgs)):
         image = imread(image_paths[i], as_gray=True)
+        # Normalize images for better comparison.
+        image = (image - image.mean()) / image.std()
         images.append(image)
 
+    features = []
     ################### baseline implementation ################
-    # feature = hog(
-    #     image,
-    #     orientations=9,
-    #     pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-    #     cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-    #     feature_vector=True,
-    # ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-    # features.extend(feature)
-
-    output = Parallel(n_jobs=-1)(delayed(task_find_vocab)(i) for i in images)
-    features = np.concatenate(np.array(output), axis=0)
-
-    # print(features[1].shape)
+    output = Parallel(n_jobs=-1)(delayed(hog_feature)(i) for i in images)
+    output = np.concatenate(np.array(output), axis=0)
+    features.append(output)
 
     ################## pyramid gaussian #####################
-    # pyramid gaussian doesn't give much improvement
-    #
-    #
-    # for (i, resized) in enumerate(
-    #     pyramid_gaussian(image, downscale=2, max_layer=3)
-    # ):
-    #     resized_image = resize(resized, image.shape)
-    #     feature = hog(
-    #         resized_image,
-    #         orientations=9,
-    #         pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-    #         cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-    #         feature_vector=True,
-    #     ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-    #     features.extend(feature)
+    # output = Parallel(n_jobs=-1)(delayed(gaussian_pyramid_feature)(i) for i in images)
+    # output = np.concatenate(np.array(output), axis=0)
+    # features.append(output)
 
     #################### gist descriptor #####################
-    # feature = gist(image, kernels)
-    # features.append(feature)
-    # output = Parallel(n_jobs=-1)(delayed(task)(i, vocab, kernels) for i in images)
-    # output = np.array(output)
-    # features = np.array(features)
-    # print(features.shape)
+    # output = Parallel(n_jobs=-1)(delayed(gist_feature)(i) for i in images)
+    # output = np.concatenate(np.array(output), axis=0)
+    # features.append(output)
+
+    features = np.concatenate(np.array(features), axis=0)
     kmeans = MiniBatchKMeans(n_clusters=vocab_size, max_iter=100)
     kmeans.fit(features)
     vocab = kmeans.cluster_centers_
@@ -237,63 +205,20 @@ def get_bags_of_words(image_paths):
 
     # TODO: Implement this function!
     num_imgs = len(image_paths)
-    output = []
-    pixels_per_cell_dim = 8
-    cells_per_block_dim = 2
-
-    # kernels = []
-    # for theta in range(8):
-    #     theta = theta / 8.0 * np.pi
-    #     for frequency in (0.1, 0.2, 0.3, 0.4):
-    #         kernels.append(np.real(gabor_kernel(frequency=frequency, theta=theta)))
 
     images = []
-    # for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
     for i in range(num_imgs):
-        # for i in tqdm(range(num_imgs)):
         image = imread(image_paths[i], as_gray=True)
         images.append(image)
 
-    #     ################### baseline implementation ################
-    #     # feature = hog(
-    #     #     image,
-    #     #     orientations=9,
-    #     #     pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-    #     #     cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-    #     #     feature_vector=True,
-    #     # ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-    #     # distances = cdist(feature, vocab, "euclidean")
-    #     # vocab_idx = np.argmin(distances, axis=1).flatten()
-    #     # labels = np.bincount(vocab_idx, minlength=len(vocab))
-    #     # labels = labels / np.linalg.norm(labels)
-    #     # output.append(labels)
-    output = Parallel(n_jobs=-1)(delayed(task_find_labels)(i, vocab) for i in images)
-    # output = np.array(output)
-    #     ################## pyramid gaussian #####################
-    #     # labels = np.zeros(len(vocab))
-    #     # for (i, resized) in enumerate(
-    #     #     pyramid_gaussian(image, downscale=2, max_layer=3)
-    #     # ):
-    #     #     resized_image = resize(resized, image.shape)
-    #     #     feature = hog(
-    #     #         resized_image,
-    #     #         orientations=9,
-    #     #         pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-    #     #         cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-    #     #         feature_vector=True,
-    #     #     ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-    #     #     distances = cdist(feature, vocab, "euclidean")
-    #     #     vocab_idx = np.argmin(distances, axis=1).flatten()
-    #     #     labels += np.bincount(vocab_idx, minlength=len(vocab))
-    #     # labels = labels / np.linalg.norm(labels)
-    #     # output.append(labels)
-    #     #################### gist descriptor #####################
-    #     feature = gist(image, kernels).reshape((1, 512))
-    #     distances = cdist(feature, vocab, "euclidean")
-    #     vocab_idx = np.argmin(distances, axis=1).flatten()
-    #     labels = np.bincount(vocab_idx, minlength=len(vocab))
-    #     labels = labels / np.linalg.norm(labels)
-    #     output.append(labels)
+    ######################## baseline implementation ################
+    # feature type: descriptors, elements can be "hog", "gist", "gaussian_pyramid"
+
+    output = Parallel(n_jobs=-1)(delayed(task_labels)(i, vocab, "hog") for i in images)
+    ################## pyramid gaussian #####################
+    # output = Parallel(n_jobs=-1)(delayed(task_labels)(i, vocab, "gaussian_pyramid") for i in images)
+    #################### gist descriptor #####################
+    # output = Parallel(n_jobs=-1)(delayed(task_labels)(i, vocab, "gist") for i in images)
 
     return np.array(output)
 
@@ -385,7 +310,7 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
     nearest_neighbor_labels = np.array(train_labels)[nearest_neighbor_idx]
     labels = mode(nearest_neighbor_labels, axis=1)[0]
 
-    #################### A more advanced version uses weighted votes ##############
+    ############## A more advanced version uses weighted votes #############
     # m = test_image_feats.shape[0]
     # distances_labels = np.tile(train_labels, (m, 1))
     # k_nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
@@ -403,7 +328,35 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
     return labels
 
 
-def gist(image, kernels):
+def hog_feature(image, *args, **kwargs):
+    pixels_per_cell_dim = 8
+    cells_per_block_dim = 2
+    feature = hog(
+        image,
+        orientations=9,
+        pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
+        cells_per_block=(cells_per_block_dim, cells_per_block_dim),
+        feature_vector=True,
+    ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
+    return feature
+
+
+def gaussian_pyramid_feature(image, *args, **kwargs):
+    pixels_per_cell_dim = 8
+    cells_per_block_dim = 2
+    for (i, resized) in enumerate(pyramid_gaussian(image, downscale=2, max_layer=3)):
+        resized_image = resize(resized, image.shape)
+        feature = hog(
+            resized_image,
+            orientations=9,
+            pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
+            cells_per_block=(cells_per_block_dim, cells_per_block_dim),
+            feature_vector=True,
+        ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
+    return feature
+
+
+def gist_feature(image, kernels):
     """
     Given an input image, a GIST descriptor is computed by
     1.Convolve the image with 32 Gabor filters at 4 scales, 8 orientations, producing 32 feature maps of the same size of the input image.
@@ -420,57 +373,36 @@ def gist(image, kernels):
 
     features = []
     for kernel in kernels:
-        filtered_image = gabor_kernel_image(image, kernel)
+        filtered_image = np.sqrt(
+            ndi.convolve(image, np.real(kernel), mode="wrap") ** 2
+            + ndi.convolve(image, np.imag(kernel), mode="wrap") ** 2
+        )
         patch_filtered_image = np.array(
             np.hsplit(np.array(np.hsplit(filtered_image, 4)), 4)
         ).reshape(16, -1)
         feature = np.mean(patch_filtered_image, axis=1)
         features.extend(feature)
     features = np.array(features)
-    return features
+    return features.reshape((-1, 36))
 
 
-def gabor_kernel_image(image, kernel):
-    # Normalize images for better comparison.
-    image = (image - image.mean()) / image.std()
-    return np.sqrt(
-        ndi.convolve(image, np.real(kernel), mode="wrap") ** 2
-        + ndi.convolve(image, np.imag(kernel), mode="wrap") ** 2
-    )
+def task_labels(image, vocab, *args, **kwargs):
+    if args[0] == "hog":
+        feature = hog_feature(image)
 
+    if args[0] == "gist":
+        kernels = []
+        for theta in range(8):
+            theta = theta / 8.0 * np.pi
+            for frequency in (0.1, 0.2, 0.3, 0.4):
+                kernels.append(np.real(gabor_kernel(frequency=frequency, theta=theta)))
+        feature = gist_feature(image, kernels)
 
-def task_find_vocab(image, *args, **kwargs):
-    pixels_per_cell_dim = 8
-    cells_per_block_dim = 2
-    feature = hog(
-        image,
-        orientations=9,
-        pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-        cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-        feature_vector=True,
-    ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-    return feature
+    if args[0] == "gaussian_pyramid":
+        feature = gaussian_pyramid_feature(image)
 
-
-def task_find_labels(image, vocab, *args, **kwargs):
-    # feature = gist(image, kernels).reshape((1, 512))
-    # distances = cdist(feature, vocab, "euclidean")
-    # vocab_idx = np.argmin(distances, axis=1).flatten()
-    # labels = np.bincount(vocab_idx, minlength=len(vocab))
-    # labels = labels / np.linalg.norm(labels)
-
-    pixels_per_cell_dim = 8
-    cells_per_block_dim = 2
-    feature = hog(
-        image,
-        orientations=9,
-        pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-        cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-        feature_vector=True,
-    ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
     distances = cdist(feature, vocab, "euclidean")
     vocab_idx = np.argmin(distances, axis=1).flatten()
     labels = np.bincount(vocab_idx, minlength=len(vocab))
     labels = labels / np.linalg.norm(labels)
-    # output.append(labels)
     return labels
