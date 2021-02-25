@@ -8,11 +8,14 @@ from helpers import progressbar
 from skimage.io import imread
 from skimage.color import rgb2grey
 from skimage.feature import hog
-from skimage.transform import resize
+from skimage.transform import resize, pyramid_gaussian
 from scipy.spatial.distance import cdist
 from scipy.stats import mode
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.svm import LinearSVC
+from sklearn.preprocessing import normalize
+
+from tqdm import tqdm
 
 
 def get_tiny_images(image_paths):
@@ -132,19 +135,32 @@ def build_vocabulary(image_paths, vocab_size):
     pixels_per_cell_dim = 8
     cells_per_block_dim = 2
     # for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
-    for i in range(num_imgs):
+    for i in tqdm(range(num_imgs)):
         image = imread(image_paths[i], as_gray=True)
-        features.extend(
-            hog(
-                image,
-                orientations=9,
-                pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
-                cells_per_block=(cells_per_block_dim, cells_per_block_dim),
-                feature_vector=True,
-            ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-        )
+
+        # pyramid gaussian
+        # pyramid_images = tuple(
+        #     pyramid_gaussian(
+        #         image,
+        #         downscale=2,
+        #         max_layer=4,
+        #     )
+        # )
+
+        # print(pyramid_images[1:].shape)
+        # exit()
+
+        feature = hog(
+            image,
+            orientations=9,
+            pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
+            cells_per_block=(cells_per_block_dim, cells_per_block_dim),
+            feature_vector=True,
+        ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
+        features.extend(feature)
     features = np.array(features)
-    kmeans = MiniBatchKMeans(n_clusters=vocab_size, max_iter=200).fit(features)
+    kmeans = MiniBatchKMeans(n_clusters=vocab_size, max_iter=100)
+    kmeans.fit(features)
     vocab = kmeans.cluster_centers_
     return vocab
 
@@ -188,7 +204,7 @@ def get_bags_of_words(image_paths):
     pixels_per_cell_dim = 8
     cells_per_block_dim = 2
     # for i in progressbar(range(num_imgs), "Loading ...", num_imgs):
-    for i in range(num_imgs):
+    for i in tqdm(range(num_imgs)):
         image = imread(image_paths[i], as_gray=True)
         feature = hog(
             image,
@@ -197,12 +213,13 @@ def get_bags_of_words(image_paths):
             cells_per_block=(cells_per_block_dim, cells_per_block_dim),
             feature_vector=True,
         ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
-        distance = cdist(feature, vocab, "euclidean")
-        vocab_idx = np.append(np.argmax(distance, axis=1), len(vocab) - 1)
+        distances = cdist(feature, vocab, "euclidean")
+        vocab_idx = np.append(np.argmin(distances, axis=1).flatten(), len(vocab) - 1)
         labels = np.bincount(vocab_idx)
         labels[-1] -= 1
         labels = labels / np.linalg.norm(labels)
         output.append(labels)
+    # output = normalize(np.array(output), axis=1)
     return np.array(output)
 
 
@@ -230,7 +247,7 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
     """
 
     # TODO: Implement this function!
-    svm_model = LinearSVC(tol=1e-05)
+    svm_model = LinearSVC(C=1.0)
     svm_model.fit(train_image_feats, train_labels)
     labels = svm_model.predict(test_image_feats)
     return labels
@@ -287,7 +304,7 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
     # 3) Pick the most common label from the k
     # 4) Store that label in a list
 
-    k = 20
+    # k = 20
     #################### baseline vote ##############
     nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
     nearest_neighbor_labels = np.array(train_labels)[nearest_neighbor_idx]
