@@ -2,16 +2,26 @@
 import numpy as np
 import os
 import argparse
+import time
 
 from helpers import get_image_paths
-from student import get_tiny_images, build_vocabulary, get_bags_of_words, \
-    svm_classify, nearest_neighbor_classify
+from student import (
+    get_tiny_images,
+    build_vocabulary,
+    get_bags_of_words,
+    svm_classify,
+    nearest_neighbor_classify,
+)
 from create_results_webpage import create_results_webpage
 
 
-def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab='True',
-                    data_path='../data/'):
-    '''
+def projSceneRecBoW(
+    feature="placeholder",
+    classifier="placeholder",
+    load_vocab="True",
+    data_path="../data/",
+):
+    """
     For this project, you will need to report performance for three
     combinations of features / classifiers. We recommend that you code them in
     this order:
@@ -54,7 +64,7 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
                         realistic number. Some accuracy calculation is broken
                         or your classifier is cheating and seeing the test
                         labels.
-    '''
+    """
 
     # Step 0: Set up parameters, category list, and image paths.
     FEATURE = feature
@@ -63,13 +73,42 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
     # This is the list of categories / directories to use. The categories are
     # somewhat sorted by similarity so that the confusion matrix looks more
     # structured (indoor and then urban and then rural).
-    categories = ['Kitchen', 'Store', 'Bedroom', 'LivingRoom', 'Office',
-           'Industrial', 'Suburb', 'InsideCity', 'TallBuilding', 'Street',
-           'Highway', 'OpenCountry', 'Coast', 'Mountain', 'Forest']
+    categories = [
+        "Kitchen",
+        "Store",
+        "Bedroom",
+        "LivingRoom",
+        "Office",
+        "Industrial",
+        "Suburb",
+        "InsideCity",
+        "TallBuilding",
+        "Street",
+        "Highway",
+        "OpenCountry",
+        "Coast",
+        "Mountain",
+        "Forest",
+    ]
 
     # This list of shortened category names is used later for visualization.
-    abbr_categories = ['Kit', 'Sto', 'Bed', 'Liv', 'Off', 'Ind', 'Sub',
-        'Cty', 'Bld', 'St', 'HW', 'OC', 'Cst', 'Mnt', 'For']
+    abbr_categories = [
+        "Kit",
+        "Sto",
+        "Bed",
+        "Liv",
+        "Off",
+        "Ind",
+        "Sub",
+        "Cty",
+        "Bld",
+        "St",
+        "HW",
+        "OC",
+        "Cst",
+        "Mnt",
+        "For",
+    ]
 
     # Number of training examples per category to use. Max is 100. For
     # simplicity, we assume this is the number of test cases per category as
@@ -80,9 +119,10 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
     # and test image, as well as string arrays with the label of each train and
     # test image. By default all four of these arrays will be 1500x1 where each
     # entry is a string.
-    print('Getting paths and labels for all train and test data.')
-    train_image_paths, test_image_paths, train_labels, test_labels = \
-        get_image_paths(data_path, categories, num_train_per_cat)
+    print("Getting paths and labels for all train and test data.")
+    train_image_paths, test_image_paths, train_labels, test_labels = get_image_paths(
+        data_path, categories, num_train_per_cat
+    )
     #   train_image_paths  1500x1   list
     #   test_image_paths   1500x1   list
     #   train_labels       1500x1   list
@@ -96,38 +136,40 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
     # each function for more details.
     ############################################################################
 
-    print('Using %s representation for images.' % FEATURE)
+    print("Using %s representation for images." % FEATURE)
 
-    if FEATURE.lower() == 'tiny_image':
-        print('Loading tiny images...')
+    if FEATURE.lower() == "tiny_image":
+        print("Loading tiny images...")
         # YOU CODE get_tiny_images (see student.py)
         train_image_feats = get_tiny_images(train_image_paths)
-        test_image_feats  = get_tiny_images(test_image_paths)
-        print('Tiny images loaded.')
+        test_image_feats = get_tiny_images(test_image_paths)
+        print("Tiny images loaded.")
 
-    elif FEATURE.lower() == 'bag_of_words':
+    elif FEATURE.lower() == "bag_of_words":
         # Because building the vocabulary takes a long time, we save the generated
         # vocab to a file and re-load it each time to make testing faster. If
         # you need to re-generate the vocab (for example if you change its size
         # or the length of your feature vectors), set --load_vocab to False.
         # This will re-compute the vocabulary.
-        if load_vocab == 'True':
+        if load_vocab == "True":
             # check if vocab exists
-            if not os.path.isfile('vocab.npy'):
-                print('IOError: No existing visual word vocabulary found. Please set --load_vocab to False.')
+            if not os.path.isfile("vocab.npy"):
+                print(
+                    "IOError: No existing visual word vocabulary found. Please set --load_vocab to False."
+                )
                 exit()
 
-        elif load_vocab == 'False':
-            print('Computing vocab from training images.')
+        elif load_vocab == "False":
+            print("Computing vocab from training images.")
 
-            #Larger values will work better (to a point), but are slower to compute
+            # Larger values will work better (to a point), but are slower to compute
             vocab_size = 200
 
             # YOU CODE build_vocabulary (see student.py)
             vocab = build_vocabulary(train_image_paths, vocab_size)
-            np.save('vocab.npy', vocab)
+            np.save("vocab.npy", vocab)
         else:
-            raise ValueError('Unknown load flag! Should be boolean.')
+            raise ValueError("Unknown load flag! Should be boolean.")
 
         # YOU CODE get_bags_of_words.m (see student.py)
         train_image_feats = get_bags_of_words(train_image_paths)
@@ -135,15 +177,15 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
         # load it up later if you want to just test your classifiers without
         # re-computing features
 
-        test_image_feats  = get_bags_of_words(test_image_paths)
+        test_image_feats = get_bags_of_words(test_image_paths)
         # Same goes here for test image features.
 
-    elif FEATURE.lower() == 'placeholder':
+    elif FEATURE.lower() == "placeholder":
         train_image_feats = []
         test_image_feats = []
 
     else:
-        raise ValueError('Unknown feature type!')
+        raise ValueError("Unknown feature type!")
 
     ############################################################################
     ## Step 2: Classify each test image by training and using the appropriate classifier
@@ -155,23 +197,27 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
     # for more details.
     ############################################################################
 
-    print('Using %s classifier to predict test set categories.' % CLASSIFIER)
+    print("Using %s classifier to predict test set categories." % CLASSIFIER)
 
-    if CLASSIFIER.lower() == 'nearest_neighbor':
+    if CLASSIFIER.lower() == "nearest_neighbor":
         # YOU CODE nearest_neighbor_classify (see student.py)
-        predicted_categories = nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
+        predicted_categories = nearest_neighbor_classify(
+            train_image_feats, train_labels, test_image_feats
+        )
 
-    elif CLASSIFIER.lower() == 'support_vector_machine':
+    elif CLASSIFIER.lower() == "support_vector_machine":
         # YOU CODE svm_classify (see student.py)
-        predicted_categories = svm_classify(train_image_feats, train_labels, test_image_feats)
+        predicted_categories = svm_classify(
+            train_image_feats, train_labels, test_image_feats
+        )
 
-    elif CLASSIFIER.lower() == 'placeholder':
-        #The placeholder classifier simply predicts a random category for every test case
+    elif CLASSIFIER.lower() == "placeholder":
+        # The placeholder classifier simply predicts a random category for every test case
         random_permutation = np.random.permutation(len(test_labels))
         predicted_categories = [test_labels[i] for i in random_permutation]
 
     else:
-        raise ValueError('Unknown classifier type')
+        raise ValueError("Unknown classifier type")
 
     ############################################################################
     ## Step 3: Build a confusion matrix and score the recognition system
@@ -187,16 +233,19 @@ def projSceneRecBoW(feature='placeholder', classifier='placeholder', load_vocab=
     # confusions reasonable?
     ############################################################################
 
-    create_results_webpage( train_image_paths, \
-                            test_image_paths, \
-                            train_labels, \
-                            test_labels, \
-                            categories, \
-                            abbr_categories, \
-                            predicted_categories)
+    create_results_webpage(
+        train_image_paths,
+        test_image_paths,
+        train_labels,
+        test_labels,
+        categories,
+        abbr_categories,
+        predicted_categories,
+    )
 
-if __name__ == '__main__':
-    '''
+
+if __name__ == "__main__":
+    """
     Command line usage:
     python main.py [-f | --feature <representation to use>]
                    [-c | --classifier <classifier method>]
@@ -211,20 +260,40 @@ if __name__ == '__main__':
     either placeholder (placeholder), nearest neighbor (nearest_neighbor), or
     support vector machine (support_vector_machine) as the classifier
 
-    -v | --load_vocab - flag - Boolean; if (True), loads the existing vocabulary 
+    -v | --load_vocab - flag - Boolean; if (True), loads the existing vocabulary
     stored in vocab.npy (under <ROOT>/code), else if (False), creates a new one.
     default=(True).
-    
+
     -d | --data - flag - if specified, will use the provided file path as the
     location to the data directory. Defaults to ../data
-    '''
+    """
     # create the command line parser
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-f', '--feature', default='placeholder', help='Either placeholder, tiny_image, or bag_of_words')
-    parser.add_argument('-c', '--classifier', default='placeholder', help='Either placeholder, nearest_neighbor, or support_vector_machine')
-    parser.add_argument('-v', '--load_vocab', default='True', help='Boolean for either loading existing vocab (True) or creating new one (False)')
-    parser.add_argument('-d', '--data', default='../data', help='Filepath to the data directory')
+    parser.add_argument(
+        "-f",
+        "--feature",
+        default="placeholder",
+        help="Either placeholder, tiny_image, or bag_of_words",
+    )
+    parser.add_argument(
+        "-c",
+        "--classifier",
+        default="placeholder",
+        help="Either placeholder, nearest_neighbor, or support_vector_machine",
+    )
+    parser.add_argument(
+        "-v",
+        "--load_vocab",
+        default="True",
+        help="Boolean for either loading existing vocab (True) or creating new one (False)",
+    )
+    parser.add_argument(
+        "-d", "--data", default="../data", help="Filepath to the data directory"
+    )
 
     args = parser.parse_args()
+    start = time.time()
     projSceneRecBoW(args.feature, args.classifier, args.load_vocab, args.data)
+    end = time.time()
+    print("Running Time: {:.5f}".format(end - start))
