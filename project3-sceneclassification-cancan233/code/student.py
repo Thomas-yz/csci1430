@@ -59,12 +59,12 @@ def get_tiny_images(image_paths):
     """
 
     # TODO: Implement this function!
-    outputs = []
+    images = []
     for image_path in image_paths:
         image = imread(image_path, as_gray=True)
-        image = resize(image, (16, 16))
-        outputs.append(image.flatten())
-    return np.array(outputs)
+        images.append(image)
+    output = Parallel(n_jobs=-1)(delayed(tiny_feature)(i) for i in images)
+    return np.array(output)
 
 
 def build_vocabulary(image_paths, vocab_size):
@@ -138,7 +138,7 @@ def build_vocabulary(image_paths, vocab_size):
     """
 
     # TODO: Implement this function!
-    # vocab_size = 50
+    # vocab_size = 400
     num_imgs = len(image_paths)
     images = []
     for i in range(num_imgs):
@@ -148,20 +148,31 @@ def build_vocabulary(image_paths, vocab_size):
         images.append(image)
 
     features = []
+    descriptors = [
+        "hog",
+        "gaussian_pyramid",
+        # "gist",
+        #
+    ]
     ################### baseline implementation ################
-    output = Parallel(n_jobs=-1)(delayed(hog_feature)(i) for i in images)
-    output = np.concatenate(np.array(output), axis=0)
-    features.append(output)
+    if "hog" in descriptors:
+        output = Parallel(n_jobs=-1)(delayed(hog_feature)(i) for i in images)
+        output = np.concatenate(np.array(output), axis=0)
+        features.append(output)
 
     ################## pyramid gaussian #####################
-    # output = Parallel(n_jobs=-1)(delayed(gaussian_pyramid_feature)(i) for i in images)
-    # output = np.concatenate(np.array(output), axis=0)
-    # features.append(output)
+    if "gaussian_pyramid" in descriptors:
+        output = Parallel(n_jobs=-1)(
+            delayed(gaussian_pyramid_feature)(i) for i in images
+        )
+        output = np.concatenate(np.array(output), axis=0)
+        features.append(output)
 
     #################### gist descriptor #####################
-    # output = Parallel(n_jobs=-1)(delayed(gist_feature)(i) for i in images)
-    # output = np.concatenate(np.array(output), axis=0)
-    # features.append(output)
+    if "gist" in descriptors:
+        output = Parallel(n_jobs=-1)(delayed(gist_feature)(i) for i in images)
+        output = np.concatenate(np.array(output), axis=0)
+        features.append(output)
 
     features = np.concatenate(np.array(features), axis=0)
     kmeans = MiniBatchKMeans(n_clusters=vocab_size, max_iter=100)
@@ -212,13 +223,19 @@ def get_bags_of_words(image_paths):
         images.append(image)
 
     ######################## baseline implementation ################
-    # feature type: descriptors, elements can be "hog", "gist", "gaussian_pyramid"
+    # task_labels: ith image, vocab, optional:"hog", "gist", "gaussian_pyramid"
 
-    output = Parallel(n_jobs=-1)(delayed(task_labels)(i, vocab, "hog") for i in images)
-    ################## pyramid gaussian #####################
-    # output = Parallel(n_jobs=-1)(delayed(task_labels)(i, vocab, "gaussian_pyramid") for i in images)
-    #################### gist descriptor #####################
-    # output = Parallel(n_jobs=-1)(delayed(task_labels)(i, vocab, "gist") for i in images)
+    output = Parallel(n_jobs=-1)(
+        delayed(task_labels)(
+            i,
+            vocab,
+            "hog",
+            "gaussian_pyramid",
+            # "gist",
+            #
+        )
+        for i in images
+    )
 
     return np.array(output)
 
@@ -247,7 +264,7 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
     """
 
     # TODO: Implement this function!
-    svm_model = LinearSVC(C=1.0)
+    svm_model = LinearSVC(C=1.0, tol=1e-8)
     svm_model.fit(train_image_feats, train_labels)
     labels = svm_model.predict(test_image_feats)
     return labels
@@ -328,6 +345,11 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
     return labels
 
 
+def tiny_feature(image, *args, **kwargs):
+    image = resize(image, (16, 16))
+    return image.flatten()
+
+
 def hog_feature(image, *args, **kwargs):
     pixels_per_cell_dim = 8
     cells_per_block_dim = 2
@@ -344,7 +366,7 @@ def hog_feature(image, *args, **kwargs):
 def gaussian_pyramid_feature(image, *args, **kwargs):
     pixels_per_cell_dim = 8
     cells_per_block_dim = 2
-    for (i, resized) in enumerate(pyramid_gaussian(image, downscale=2, max_layer=3)):
+    for (_, resized) in enumerate(pyramid_gaussian(image, downscale=2, max_layer=3)):
         resized_image = resize(resized, image.shape)
         feature = hog(
             resized_image,
@@ -356,7 +378,7 @@ def gaussian_pyramid_feature(image, *args, **kwargs):
     return feature
 
 
-def gist_feature(image, kernels):
+def gist_feature(image):
     """
     Given an input image, a GIST descriptor is computed by
     1.Convolve the image with 32 Gabor filters at 4 scales, 8 orientations, producing 32 feature maps of the same size of the input image.
@@ -369,7 +391,12 @@ def gist_feature(image, kernels):
     r, c = image.shape
     dim = (min(r, c) // 4) * 4
     image = resize(image, (dim, dim))
-    image /= 255.0
+
+    kernels = []
+    for theta in range(8):
+        theta = theta / 8.0 * np.pi
+        for frequency in (0.1, 0.2, 0.3, 0.4):
+            kernels.append(np.real(gabor_kernel(frequency=frequency, theta=theta)))
 
     features = []
     for kernel in kernels:
@@ -382,25 +409,23 @@ def gist_feature(image, kernels):
         ).reshape(16, -1)
         feature = np.mean(patch_filtered_image, axis=1)
         features.extend(feature)
-    features = np.array(features)
+    # only take 504 as 512 cannot be divided by 36
+    features = np.array(features)[: -(512 % 36)]
     return features.reshape((-1, 36))
 
 
 def task_labels(image, vocab, *args, **kwargs):
-    if args[0] == "hog":
-        feature = hog_feature(image)
+    feature = []
+    if "hog" in args:
+        feature.append(hog_feature(image))
 
-    if args[0] == "gist":
-        kernels = []
-        for theta in range(8):
-            theta = theta / 8.0 * np.pi
-            for frequency in (0.1, 0.2, 0.3, 0.4):
-                kernels.append(np.real(gabor_kernel(frequency=frequency, theta=theta)))
-        feature = gist_feature(image, kernels)
+    if "gist" in args:
+        feature.append(gist_feature(image))
 
-    if args[0] == "gaussian_pyramid":
-        feature = gaussian_pyramid_feature(image)
+    if "gaussian_pyramid" in args:
+        feature.append(gaussian_pyramid_feature(image))
 
+    feature = np.concatenate(np.array(feature), axis=0)
     distances = cdist(feature, vocab, "euclidean")
     vocab_idx = np.argmin(distances, axis=1).flatten()
     labels = np.bincount(vocab_idx, minlength=len(vocab))
