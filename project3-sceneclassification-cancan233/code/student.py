@@ -10,20 +10,22 @@ from scipy import ndimage as ndi
 from scipy.stats.stats import KendalltauResult
 
 from skimage import feature
-from sklearn import cluster
 from helpers import progressbar
 from skimage.io import imread
 from skimage.color import rgb2grey
-from skimage.feature import hog
+from skimage.feature import hog, daisy
 from skimage.transform import resize, pyramid_gaussian
-from skimage.filters import gabor_kernel
+from skimage.filters import gabor_kernel, gaussian
 
 from scipy.spatial.distance import cdist
 from scipy.stats import mode
-from sklearn.cluster import MiniBatchKMeans
-from sklearn.svm import LinearSVC
 
-# from tqdm import tqdm
+from sklearn import cluster
+from sklearn.cluster import MiniBatchKMeans
+from sklearn import svm
+
+# from sklearn.mixture import GaussianMixture
+
 from joblib import Parallel, delayed
 
 
@@ -152,6 +154,7 @@ def build_vocabulary(image_paths, vocab_size):
         "hog",
         "gaussian_pyramid",
         # "gist",
+        # "daisy",
         #
     ]
     ################### baseline implementation ################
@@ -174,8 +177,13 @@ def build_vocabulary(image_paths, vocab_size):
         output = np.concatenate(np.array(output), axis=0)
         features.append(output)
 
+    if "daisy" in descriptors:
+        output = Parallel(n_jobs=-1)(delayed(daisy_feature)(i) for i in images)
+        output = np.concatenate(np.array(output), axis=0)
+        features.append(output)
+
     features = np.concatenate(np.array(features), axis=0)
-    kmeans = MiniBatchKMeans(n_clusters=vocab_size, max_iter=100)
+    kmeans = cluster.MiniBatchKMeans(n_clusters=vocab_size, max_iter=100)
     kmeans.fit(features)
     vocab = kmeans.cluster_centers_
     return vocab
@@ -220,22 +228,37 @@ def get_bags_of_words(image_paths):
     images = []
     for i in range(num_imgs):
         image = imread(image_paths[i], as_gray=True)
+        image = (image - image.mean()) / image.std()
         images.append(image)
 
     ######################## baseline implementation ################
     # task_labels: ith image, vocab, optional:"hog", "gist", "gaussian_pyramid"
 
     output = Parallel(n_jobs=-1)(
-        delayed(task_labels)(
+        delayed(generate_feats)(
             i,
             vocab,
             "hog",
             "gaussian_pyramid",
             # "gist",
+            # "daisy",
             #
         )
         for i in images
     )
+
+    # output = Parallel(n_jobs=-1)(
+    #     delayed(spatial_pyramid_match)(
+    #         i,
+    #         vocab,
+    #         "hog",
+    #         "gaussian_pyramid",
+    #         # "gist",
+    #         # "daisy",
+    #         #
+    #     )
+    #     for i in images
+    # )
 
     return np.array(output)
 
@@ -264,7 +287,31 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
     """
 
     # TODO: Implement this function!
-    svm_model = LinearSVC(C=1.0, tol=1e-8)
+    # svm_model = svm.LinearSVC(C=1.0, tol=1e-8)
+    svm_model = svm.SVC(
+        kernel="poly",
+        degree=5,
+        gamma=0.5,
+        coef0=1.0,
+        shrinking=True,
+        probability=True,
+        tol=1e-8,
+        class_weight="balanced",
+        break_ties=True,
+    )
+    # svm_model = svm.SVC(
+    #     kernel="sigmoid",
+    #     gamma=0.5,
+    #     coef0=1.0,
+    #     tol=1e-8,
+    #     class_weight="balanced",
+    #     break_ties=True,
+    # )
+    # svm_model = svm.SVC(
+    #     kernel="rbf",
+    #     gamma=0.5,
+    #     tol=1e-8,
+    # )
     svm_model.fit(train_image_feats, train_labels)
     labels = svm_model.predict(test_image_feats)
     return labels
@@ -321,26 +368,29 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
     # 3) Pick the most common label from the k
     # 4) Store that label in a list
 
-    # k = 20
+    k = 15
     #################### baseline vote ##############
-    nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
-    nearest_neighbor_labels = np.array(train_labels)[nearest_neighbor_idx]
-    labels = mode(nearest_neighbor_labels, axis=1)[0]
+    # nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
+    # nearest_neighbor_labels = np.array(train_labels)[nearest_neighbor_idx]
+    # labels = mode(nearest_neighbor_labels, axis=1)[0]
 
-    ############## A more advanced version uses weighted votes #############
-    # m = test_image_feats.shape[0]
-    # distances_labels = np.tile(train_labels, (m, 1))
-    # k_nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
-    # k_nearest_distances = np.take_along_axis(distances, k_nearest_neighbor_idx, axis=1)
-    # k_labels = np.take_along_axis(distances_labels, k_nearest_neighbor_idx, axis=1)
-    # weights = 1 / (k_nearest_distances + 1e-8)
-    # weights /= np.sum(weights, axis=1)[:, np.newaxis]
-    # unique_labels = np.array(list(set(train_labels)))
-    # votes = np.zeros((m, len(unique_labels)))
-    # for i in range(len(unique_labels)):
-    #     votes[:, i] = np.sum(np.where(k_labels == unique_labels[i], weights, 0), axis=1)
-    # labels_idx = np.argmax(votes, axis=1)
-    # labels = unique_labels[labels_idx]
+    ############## weighted votes #############
+    m = test_image_feats.shape[0]
+    distances_labels = np.tile(train_labels, (m, 1))
+    k_nearest_neighbor_idx = np.argsort(distances, axis=1)[:, :k]
+    k_nearest_distances = np.take_along_axis(distances, k_nearest_neighbor_idx, axis=1)
+    k_labels = np.take_along_axis(distances_labels, k_nearest_neighbor_idx, axis=1)
+    weights = 1 / (k_nearest_distances + 1e-8)
+    weights /= np.sum(weights, axis=1)[:, np.newaxis]
+    np.putmask(weights, weights < 0.1 / k, 0)
+
+    unique_labels = np.array(list(set(train_labels)))
+    votes = np.zeros((m, len(unique_labels)))
+    for i in range(len(unique_labels)):
+        votes[:, i] = np.sum(np.where(k_labels == unique_labels[i], weights, 0), axis=1)
+    labels_idx = np.argmax(votes, axis=1)
+    labels = unique_labels[labels_idx]
+    ################ NBNN ######################
 
     return labels
 
@@ -353,13 +403,14 @@ def tiny_feature(image, *args, **kwargs):
 def hog_feature(image, *args, **kwargs):
     pixels_per_cell_dim = 8
     cells_per_block_dim = 2
+    orientation_bin = 9
     feature = hog(
         image,
-        orientations=9,
+        orientations=orientation_bin,
         pixels_per_cell=(pixels_per_cell_dim, pixels_per_cell_dim),
         cells_per_block=(cells_per_block_dim, cells_per_block_dim),
         feature_vector=True,
-    ).reshape(-1, cells_per_block_dim * cells_per_block_dim * 9)
+    ).reshape(-1, cells_per_block_dim * cells_per_block_dim * orientation_bin)
     return feature
 
 
@@ -391,6 +442,7 @@ def gist_feature(image):
     r, c = image.shape
     dim = (min(r, c) // 4) * 4
     image = resize(image, (dim, dim))
+    # image /= 255.0
 
     kernels = []
     for theta in range(8):
@@ -414,7 +466,12 @@ def gist_feature(image):
     return features.reshape((-1, 36))
 
 
-def task_labels(image, vocab, *args, **kwargs):
+def daisy_feature(image):
+    feature = daisy(image).reshape(-1, 200)
+    return feature
+
+
+def generate_feats(image, vocab, *args, **kwargs):
     feature = []
     if "hog" in args:
         feature.append(hog_feature(image))
@@ -425,9 +482,69 @@ def task_labels(image, vocab, *args, **kwargs):
     if "gaussian_pyramid" in args:
         feature.append(gaussian_pyramid_feature(image))
 
+    if "daisy" in args:
+        feature.append(daisy_feature(image))
+
     feature = np.concatenate(np.array(feature), axis=0)
     distances = cdist(feature, vocab, "euclidean")
+
     vocab_idx = np.argmin(distances, axis=1).flatten()
-    labels = np.bincount(vocab_idx, minlength=len(vocab))
-    labels = labels / np.linalg.norm(labels)
-    return labels
+    feats = np.bincount(vocab_idx, minlength=len(vocab))
+    feats = feats / np.linalg.norm(feats)
+
+    #################### Soft asssignment ###############################
+    # Use "soft assignment" to assign visual words to histogram bins. Each
+    # visual word will cast a distance-weighted vote to multiple bins.
+
+    # sigma = 0.05
+    # distances = np.exp(-(distances ** 2) / (sigma ** 2))
+    # distances = distances / np.sum(distances, axis=1)[:, np.newaxis]
+    # feats = np.sum(distances, axis=0)
+
+    ##################### Spatial match kernel ###########################
+
+    feats = feats / np.linalg.norm(feats)
+    return feats
+
+
+def spatial_pyramid_match(image, descriptor, vocab, level=2):
+    pyramid = []
+    pyramid += build_spatial_pyramid(image, descriptor, level=0)
+    pyramid += build_spatial_pyramid(image, descriptor, level=1)
+    pyramid += build_spatial_pyramid(image, descriptor, level=2)
+    code = [
+        generate_feats(
+            image,
+            vocab,
+            "hog",
+            "gaussian_pyramid",
+        )
+        for crop in pyramid
+    ]
+    code_level_0 = 0.25 * np.asarray(code[0]).flatten()
+    code_level_1 = 0.25 * np.asarray(code[1:5]).flatten()
+    code_level_2 = 0.5 * np.asarray(code[5:]).flatten()
+    return np.concatenate((code_level_0, code_level_1, code_level_2))
+
+
+def build_spatial_pyramid(image, descriptor, level):
+    """
+    Rebuild the descriptors according to the level of pyramid
+    """
+    step_size = 4
+    h = image.shape[0] // step_size
+    w = image.shape[0] // step_size
+    idx_crop = np.array(range(len(descriptor))).reshape(h, w)
+    size = idx_crop.itemsize
+    height, width = idx_crop.shape
+    bh, bw = 2 ** (3 - level), 2 ** (3 - level)
+    shape = (height // bh, width // bw, bh, bw)
+    strides = size * np.array([width * bh, bw, width, 1])
+    crops = np.lib.stride_tricks.as_strided(idx_crop, shape=shape, strides=strides)
+    des_idxs = [
+        col_block.flatten().tolist() for row_block in crops for col_block in row_block
+    ]
+    pyramid = []
+    for idxs in des_idxs:
+        pyramid.append(np.asarray([descriptor[idx] for idx in idxs]))
+    return pyramid
