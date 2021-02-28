@@ -145,8 +145,12 @@ Here we presented the result with optimized parameters. The code here is the sam
 \begin{enumerate}
     \item Feature representation extra credit
           \begin{itemize}
-              \item Sampling features from different levels of a Gaussian pyramid: the implementation detail can be found in \verb|gaussian\_pyramid\_feature()|. Simply speaking, \verb|pyramid_gaussian| funtion in \verb|sklearn| is used to constructed the image pyramid. Then images are resized back the original image size and features are constructed based upon these image patches. This method does improve the accuracy by about 4\%. Therefore, I used it combined with hog as my final submission.
-              \item Add gist descriptors and consider with other existing descriptors together for vocabulary: the implementation detail can be found in \verb|gist_feature()|. Intuitively, GIST summarizes the gradient information (scales and orientations) for different parts of an image, which provides a rough description (the gist) of the scene.Given an input image, the gist descriptor is computed by
+              \item \textbf{Sampling features from different levels of a Gaussian pyramid}: the implementation detail can be found in \verb|gaussian\_pyramid\_feature()|. 
+              
+              Simply speaking, \verb|pyramid_gaussian| funtion in \verb|sklearn| is used to constructed the image pyramid. Then images are resized back the original image size and features are constructed based upon these image patches. This method does improve the accuracy by about 4\%. Therefore, I used it combined with hog as my final submission.
+              \item \textbf{Add gist descriptors and consider with other existing descriptors together for vocabulary}: 
+              
+              the implementation detail can be found in \verb|gist_feature()|. Intuitively, GIST summarizes the gradient information (scales and orientations) for different parts of an image, which provides a rough description (the gist) of the scene.Given an input image, the gist descriptor is computed by
                     \begin{enumerate}
                         \item Convolve the image with 32 Gabor filters at 4 scales, 8 orientations, producing 32 feature maps of the same size of the input image.
                         \item Divide each feature map into 16 regions (by a 4x4 grid), and then average the feature values within each region.
@@ -171,17 +175,20 @@ Here we presented the result with optimized parameters. The code here is the sam
           \end{itemize}
     \item Feature quantization and bag of words extra credit
           \begin{itemize}
-              \item Use "soft assignment" to assign visual words to histogram bins: below the corresponding code for soft assignment part. The distances between image features and vocabulary are filtered with gaussian formula. Each visual word will cast a distance-weighted vote to multiple bins. Thus, the further distance between the feature and the word, the less contribution the word to the final bincount number. This will improve the accuracy by about 3\%.
-                    %                     \begin{python}
-                    % sigma = 0.05
-                    % distances = np.exp(-(distances ** 2) / (sigma ** 2))
-                    % distances = distances / np.sum(distances, axis=1)[:, np.newaxis]
-                    % feats = np.sum(distances, axis=0)
-                    %                     \end{python}
+              \item \textbf{Use "soft assignment" to assign visual words to histogram bins}: below the corresponding code for soft assignment part. The distances between image features and vocabulary are filtered with gaussian formula. Each visual word will cast a distance-weighted vote to multiple bins. Thus, the further distance between the feature and the word, the less contribution the word to the final bincount number. This will improve the accuracy by about 3\%.
+                    \begin{python}
+sigma = 0.05
+distances = np.exp(-(distances ** 2) / (sigma ** 2))
+distances = distances / np.sum(distances, axis=1)[:, np.newaxis]
+feats = np.sum(distances, axis=0)
+                    \end{python}
           \end{itemize}
     \item Classifier extra credit
           \begin{itemize}
-              \item Train the SVM with different kernels. Different SVM models have been tested here using \verb|SVC| with different kernels. The performance comparison is presented below.
+              \item \textbf{Train the SVM with different kernels}:
+              
+              the implementation detail can be found in \verb|svm_classify()|.
+              Different SVM models have been tested here using \verb|SVC| with different kernels. The performance comparison is presented below.
                     \begin{table}[h]
                         \centering
                         \begin{tabular}{lr}
@@ -199,12 +206,17 @@ Here we presented the result with optimized parameters. The code here is the sam
                         \label{svm}
                     \end{table}
           \end{itemize}
-    \item Spatial Pyramid representation and classifier: this feature is not fully implemented as I haven't successfully configured how to trace back the location of feature generated by hog. In the \hyperlink{https://inc.ucsd.edu/~marni/Igert/Lazebnik_06.pdf}{paper}, the dense SIFT descriptor is used and thus the location of each feature in the image is the center point location. However, for hog descriptor, the block will overlap with each other and the returned feature vectors are flatten and reshaped, which makes it difficult to figure out how to assign the location of each feature back to the image. Thus, in my implementation, I assume that there exists one function \verb|locate_descriptors()| that can locate the corresponding feature vector in the image and return the positions.
-          The principle of spatial pyramid representation is that counting the feature label in different scales, and adding these count together with weigting levels' count to a final feature for the image. Once we could locate the positions of the features and counting them by dividing the original image to different sections. The final feature can be obtained by summing them up.
+    \item \textbf{Spatial Pyramid representation and classifier}: 
+    
+    the implementation detail can be found in \verb|build_spatial_pyramid()| and \verb|spatial_pyramid_matching()|.
+
+    This feature is not fully implemented as I haven't successfully configured how to trace back the location of feature generated by hog. In the \hyperlink{https://inc.ucsd.edu/~marni/Igert/Lazebnik_06.pdf}{paper}, the dense SIFT descriptor is used and thus the location of each feature in the image is the center point location. However, for hog descriptor, the block will overlap with each other and the returned feature vectors are flatten and reshaped, which makes it difficult to figure out how to assign the location of each feature back to the image. Thus, in my implementation, I assume that there exists one function \verb|locate_descriptors()| that can locate the corresponding feature vector in the image and return the positions.
+    
+    The principle of spatial pyramid representation is that counting the feature label in different scales, and adding these count together with weigting levels' count to a final feature for the image (See \verb|spatial_pyramid_matching()| for weights assignment). Once we could locate the positions of the features and counting them by dividing the original image to different sections. The final feature can be obtained by summing them up.
 
     \item Experimental design extra credit
           \begin{itemize}
-              \item experiment with many different vocabulary sizes: the performance of model with different vocabulary size is presented below.
+              \item \textbf{experiment with many different vocabulary sizes}: the performance of model with different vocabulary size is presented below.
                     \begin{table}[h]
                         \centering
                         \begin{tabular}{lrrrrrrrr}
@@ -219,7 +231,7 @@ Here we presented the result with optimized parameters. The code here is the sam
                         \label{svm}
                     \end{table}
 
-              \item report performance on the 397-category \hyperlink{https://vision.princeton.edu/projects/2010/SUN/}{SUN database}.
+              \item \textbf{report performance on the 397-category \hyperlink{https://vision.princeton.edu/projects/2010/SUN/}{SUN database}}.
 
           \end{itemize}
 \end{enumerate}
