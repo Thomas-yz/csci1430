@@ -216,7 +216,7 @@ feats = np.sum(distances, axis=0)
 
     \item Experimental design extra credit
           \begin{itemize}
-              \item \textbf{experiment with many different vocabulary sizes}: the performance of model with different vocabulary size is presented below.
+              \item \textbf{experiment with many different vocabulary sizes}: the performance of model with different vocabulary size is presented below. However, the performance is not stable as the results will fluctuate about 2\% due to the randomalization of Kmeans and SVM. We could see that increase the vocabulary size could increase accuracy at first. However, larger vocabulary size doesn't guarantee better performance.
                     \begin{table}[h]
                         \centering
                         \begin{tabular}{lrrrrrrrr}
