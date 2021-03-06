@@ -15,14 +15,18 @@ from skimage.io import imread
 from skimage.color import rgb2grey
 from skimage.feature import hog, daisy
 from skimage.transform import resize, pyramid_gaussian
-from skimage.filters import gabor_kernel, gaussian
+from skimage.filters import gabor_kernel, gaussian, sobel_h, sobel_v
 
 from scipy.spatial.distance import cdist
 from scipy.stats import mode
 
 from sklearn import cluster
 from sklearn.cluster import MiniBatchKMeans
-from sklearn import svm
+from sklearn.svm import SVC, LinearSVC
+from sklearn.feature_selection import SelectPercentile, chi2
+from skelarn.mixture import GaussianMixture as GMM
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 # from sklearn.mixture import GaussianMixture
 
@@ -140,13 +144,11 @@ def build_vocabulary(image_paths, vocab_size):
     """
 
     # TODO: Implement this function!
-    # vocab_size = 400
+    # vocab_size = 10000
     num_imgs = len(image_paths)
     images = []
     for i in range(num_imgs):
         image = imread(image_paths[i], as_gray=True)
-        # Normalize images for better comparison.
-        image = (image - image.mean()) / image.std()
         images.append(image)
 
     features = []
@@ -155,7 +157,6 @@ def build_vocabulary(image_paths, vocab_size):
         "gaussian_pyramid",
         # "gist",
         # "daisy",
-        #
     ]
     ################### baseline implementation ################
     if "hog" in descriptors:
@@ -182,8 +183,17 @@ def build_vocabulary(image_paths, vocab_size):
         output = np.concatenate(np.array(output), axis=0)
         features.append(output)
 
+    if "sift" in descriptors:
+        output = Parallel(n_jobs=-1)(delayed(daisy_feature)(i) for i in images)
+        output = np.concatenate(np.array(output), axis=0)
+        features.append(output)
+
     features = np.concatenate(np.array(features), axis=0)
-    kmeans = cluster.MiniBatchKMeans(n_clusters=vocab_size, max_iter=100)
+    kmeans = cluster.MiniBatchKMeans(
+        n_clusters=vocab_size,
+        init_size=3 * max(vocab_size, 100),
+        max_iter=100,
+    )
     kmeans.fit(features)
     vocab = kmeans.cluster_centers_
     return vocab
@@ -228,12 +238,10 @@ def get_bags_of_words(image_paths):
     images = []
     for i in range(num_imgs):
         image = imread(image_paths[i], as_gray=True)
-        image = (image - image.mean()) / image.std()
         images.append(image)
 
     ######################## baseline implementation ################
     # task_labels: ith image, vocab, optional:"hog", "gist", "gaussian_pyramid"
-
     output = Parallel(n_jobs=-1)(
         delayed(generate_feats)(
             i,
@@ -242,24 +250,9 @@ def get_bags_of_words(image_paths):
             "gaussian_pyramid",
             # "gist",
             # "daisy",
-            #
         )
         for i in images
     )
-
-    # output = Parallel(n_jobs=-1)(
-    #     delayed(spatial_pyramid_match)(
-    #         i,
-    #         vocab,
-    #         "hog",
-    #         "gaussian_pyramid",
-    #         # "gist",
-    #         # "daisy",
-    #         #
-    #     )
-    #     for i in images
-    # )
-
     return np.array(output)
 
 
@@ -287,9 +280,10 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
     """
 
     # TODO: Implement this function!
-    # svm_model = svm.LinearSVC(C=1.0, tol=1e-8)
-    svm_model = svm.SVC(
+    # svm_model = LinearSVC(tol=1e-8)
+    svm_model = SVC(
         kernel="poly",
+        # C=0.5,
         degree=5,
         gamma=0.5,
         coef0=1.0,
@@ -299,7 +293,7 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
         class_weight="balanced",
         break_ties=True,
     )
-    # svm_model = svm.SVC(
+    # svm_model = SVC(
     #     kernel="sigmoid",
     #     gamma=0.5,
     #     coef0=1.0,
@@ -307,11 +301,32 @@ def svm_classify(train_image_feats, train_labels, test_image_feats):
     #     class_weight="balanced",
     #     break_ties=True,
     # )
-    # svm_model = svm.SVC(
+    # svm_model = SVC(
     #     kernel="rbf",
     #     gamma=0.5,
     #     tol=1e-8,
     # )
+    # svm_model = Pipeline(
+    #     [
+    #         ("anova", SelectPercentile(chi2, percentile=50)),
+    #         ("scalar", StandardScaler()),
+    #         (
+    #             "svc",
+    #             SVC(
+    #                 kernel="poly",
+    #                 degree=5,
+    #                 gamma=0.5,
+    #                 coef0=1.0,
+    #                 shrinking=True,
+    #                 probability=True,
+    #                 tol=1e-8,
+    #                 class_weight="balanced",
+    #                 break_ties=True,
+    #             ),
+    #         ),
+    #     ]
+    # )
+    svm_model.set_params()
     svm_model.fit(train_image_feats, train_labels)
     labels = svm_model.predict(test_image_feats)
     return labels
@@ -390,7 +405,6 @@ def nearest_neighbor_classify(train_image_feats, train_labels, test_image_feats)
         votes[:, i] = np.sum(np.where(k_labels == unique_labels[i], weights, 0), axis=1)
     labels_idx = np.argmax(votes, axis=1)
     labels = unique_labels[labels_idx]
-    ################ NBNN ######################
 
     return labels
 
@@ -442,7 +456,6 @@ def gist_feature(image):
     r, c = image.shape
     dim = (min(r, c) // 4) * 4
     image = resize(image, (dim, dim))
-    # image /= 255.0
 
     kernels = []
     for theta in range(8):
@@ -488,63 +501,66 @@ def generate_feats(image, vocab, *args, **kwargs):
     feature = np.concatenate(np.array(feature), axis=0)
     distances = cdist(feature, vocab, "euclidean")
 
-    vocab_idx = np.argmin(distances, axis=1).flatten()
-    feats = np.bincount(vocab_idx, minlength=len(vocab))
-    feats = feats / np.linalg.norm(feats)
+    # vocab_idx = np.argmin(distances, axis=1).flatten()
+    # feats = np.bincount(vocab_idx, minlength=len(vocab))
+    # feats = feats / np.linalg.norm(feats)
 
     #################### Soft asssignment ###############################
     # Use "soft assignment" to assign visual words to histogram bins. Each
     # visual word will cast a distance-weighted vote to multiple bins.
 
-    # sigma = 0.05
-    # distances = np.exp(-(distances ** 2) / (sigma ** 2))
-    # distances = distances / np.sum(distances, axis=1)[:, np.newaxis]
-    # feats = np.sum(distances, axis=0)
-
-    ##################### Spatial match kernel ###########################
+    sigma = 0.05
+    distances = np.exp(-(distances ** 2) / (sigma ** 2))
+    distances = distances / np.sum(distances, axis=1)[:, np.newaxis]
+    feats = np.sum(distances, axis=0)
 
     feats = feats / np.linalg.norm(feats)
     return feats
 
 
-def spatial_pyramid_match(image, descriptor, vocab, level=2):
-    pyramid = []
-    pyramid += build_spatial_pyramid(image, descriptor, level=0)
-    pyramid += build_spatial_pyramid(image, descriptor, level=1)
-    pyramid += build_spatial_pyramid(image, descriptor, level=2)
-    code = [
-        generate_feats(
-            image,
-            vocab,
-            "hog",
-            "gaussian_pyramid",
-        )
-        for crop in pyramid
-    ]
-    code_level_0 = 0.25 * np.asarray(code[0]).flatten()
-    code_level_1 = 0.25 * np.asarray(code[1:5]).flatten()
-    code_level_2 = 0.5 * np.asarray(code[5:]).flatten()
-    return np.concatenate((code_level_0, code_level_1, code_level_2))
+def fisher_vector(xx):
+    gmm = GMM(n_components=64, covariance_type="diag")
+    gmm.fit(xx)
+    N = xx.shape[0]
+    Q = gmm.predict_proba(xx)
+    Q_sum = np.sum(Q, 0)[:, np.newaxis] / N
+    Q_xx = np.dot(Q.T, xx) / N
+    Q_xx_2 = np.dot(Q.T, xx ** 2) / N
+
+    d_pi = Q_sum.squeeze(), gmm.weights_
+    d_mu = Q_xx - Q_sum * gmm.means_
+    d_sigma = (
+        -Q_xx_2
+        - Q_sum * gmm.means_ ** 2
+        + Q_sum * gmm.covariances_
+        + 2 * Q_xx * gmm.means_
+    )
+    return np.hstack((d_pi, d_mu.flatten(), d_sigma.flatten()))
 
 
 def build_spatial_pyramid(image, descriptor, level):
     """
     Rebuild the descriptors according to the level of pyramid
     """
-    step_size = 4
-    h = image.shape[0] // step_size
-    w = image.shape[0] // step_size
-    idx_crop = np.array(range(len(descriptor))).reshape(h, w)
-    size = idx_crop.itemsize
-    height, width = idx_crop.shape
+    labels = kmeans.predict(descriptor)
+    positions = locate_descriptor(image, descriptor)
     bh, bw = 2 ** (3 - level), 2 ** (3 - level)
-    shape = (height // bh, width // bw, bh, bw)
-    strides = size * np.array([width * bh, bw, width, 1])
-    crops = np.lib.stride_tricks.as_strided(idx_crop, shape=shape, strides=strides)
-    des_idxs = [
-        col_block.flatten().tolist() for row_block in crops for col_block in row_block
-    ]
+
     pyramid = []
-    for idxs in des_idxs:
-        pyramid.append(np.asarray([descriptor[idx] for idx in idxs]))
+    # for
+    #     for i in range(bh):
+    #         for j in range(bw):
+    #             pyramid.append(np.bincount())
     return pyramid
+
+
+def spatial_pyramid_matching(image, descriptor, codebook, level):
+    pyramid = []
+    pyramid += build_spatial_pyramid(image, descriptor, level=0)
+    pyramid += build_spatial_pyramid(image, descriptor, level=1)
+    pyramid += build_spatial_pyramid(image, descriptor, level=2)
+    code = [generate_feats(crop, codebook) for crop in pyramid]
+    code_level_0 = 0.25 * np.asarray(code[0]).flatten()
+    code_level_1 = 0.25 * np.asarray(code[1:5]).flatten()
+    code_level_2 = 0.5 * np.asarray(code[5:]).flatten()
+    return np.concatenate((code_level_0, code_level_1, code_level_2))

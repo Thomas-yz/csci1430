@@ -1,0 +1,12 @@
+**/.DS_Store
+.vscode
+.idea
+__pycache__
+venv
+results/*
+*.synctex.gz
+*.out
+*.log
+*.fls
+*.fdb_latexmk
+*.aux
