@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from numpy.lib.function_base import gradient
 
 from sklearn.svm import LinearSVC
 
@@ -13,7 +14,7 @@ class Model:
         self.batchSz = hp.batch_size
         self.train_images = train_images
         self.train_labels = train_labels
-        self.clf = LinearSVC(multi_class='ovr', dual=False)
+        self.clf = LinearSVC(multi_class="ovr", dual=False)
 
         # TODO: Set up the weights and biases with the correct shapes
         # Recall that the weights should be of shape
@@ -22,8 +23,8 @@ class Model:
         #           [1, number_classes]
         # Fill in the below
         # functions with the correct shapes for both parameters
-        self.W = np.random.rand()
-        self.b = np.zeros()
+        self.W = np.random.rand(self.input_size, self.num_classes)
+        self.b = np.zeros((1, self.num_classes))
 
     def forward_pass(self, inputs):
         """
@@ -49,10 +50,10 @@ class Model:
         :param inputs: a batch of train images
         :return: probabilities for each per image
         """
-        # TODO: Calculate logits for linear units
-
+        pred = np.dot(inputs, self.W) + self.b
         # TODO: Get probabilities by using softmax on the logits
-        probabilities = None
+        pred -= np.max(pred)
+        probabilities = np.exp(pred) / np.sum(np.exp(pred))
         return probabilities
 
     @staticmethod
@@ -72,7 +73,7 @@ class Model:
         # TODO: compute loss value
         # Note that while probabilities is [batchSz, num_classes], in our
         # problem, batchSz = 1, so you will have to index into the 0th element
-        loss = None
+        loss = -np.log(probabilities[0, gt_label] + 1e-10)
         return loss
 
     @staticmethod
@@ -99,8 +100,11 @@ class Model:
         """
         # TODO: Back propagation: use gradient descent to update parameters
 
-        # TODO: Reshape train image data to be matrix, dimension [784, 1]
-        gradW, gradB = None, None
+        # TODO: Reshape train image data to be matrix, dimension [-1, 1]
+        img = np.reshape(img, (-1, 1))
+        probabilities[0, gt_label] -= 1
+        gradW = np.dot(img, probabilities)
+        gradB = probabilities
         return gradW, gradB
 
     def gradient_descent(self, gradW, gradB):
@@ -114,6 +118,8 @@ class Model:
         :return: None
         """
         # TODO: Modify parameters with summed updates
+        self.W = self.W - self.learning_rate * gradW
+        self.b = self.b - self.learning_rate * gradB
         pass
 
     def train_nn(self):
@@ -143,16 +149,17 @@ class Model:
 
                 # TODO: 1. Calculate probabilities from calling forward pass
                 #       on img
-                probabilities = None
-
+                probabilities = self.forward_pass(img)
                 # TODO: 2. Calculate the loss from probabilities, loss_sum =
                 #       loss_sum + your_loss_over_all_classes
-                loss = None
+                loss = self.loss(probabilities=probabilities, gt_label=gt_label)
+                loss_sum += np.sum(loss)
 
                 # TODO: 3. Calculate gradW, gradB from back propagation
-                gradW, gradB = None
+                gradW, gradB = self.back_propagation(img, probabilities, gt_label)
 
                 # TODO: 4. Update self.W and self.B with gradient descent
+                self.gradient_descent(gradW, gradB)
 
             print("Epoch " + str(epoch) + ": Total loss: " + str(loss_sum))
 

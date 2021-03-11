@@ -123,13 +123,23 @@ should be on this page
 \paragraph{A1:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item
+\item In traditional computer vision algorithms, such as SIFT, the construction of filters are defined manually. For example, SIFT descriptor are constructed based upon the number in every orientation bins based upon the gradients of each pixel. However, the filters in convolutional neural networks are learned during the training process, we only need to define the shape and the number of the filters and the parameters in filters will be tuned during the optimization procedure. 
 
-% \item
+\item Filters in traditional computer vision algorithms:
+        \begin{itemize}
+            \item Advantages: it is fast as the feature extraction is predefined and required no training process. It is simpler design and less parameters to set compared to CNN.
+            \item Disadvantages: it is poor generalization and not robust to nonlinear transformations.
+        \end{itemize}
+    Filters in convolutional neural network:
+    \begin{itemize}
+        \item Advantages: it can provide great performance in classification tasks and stongly bio-inspired and very good at generalization.
+        \item Disadvantages: it requires large training set for better performance and demand high memory to store the trained weights of the network. Thus, it is slower than SIFT.
+    \end{itemize}
 
-% \end{enumerate}
+    (source: \href{https://tams.informatik.uni-hamburg.de/lectures/2015ws/seminar/ir/pdf/slides/JosipJosifovski-Object_Recognition_SIFT_vs_Convolutional_Neural_Networks.pdf}{Object Recognition SIFT vs Convolutional Neural Networks})
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -139,7 +149,7 @@ should be on this page
 Please give your answer in terms of the learned convolution feature maps, their connections, and the perceptrons in the MLP.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\paragraph{A2:} Your answer here.
+\paragraph{A2:} \href{https://prateekvjoshi.com/2016/04/12/understanding-locally-connected-layers-in-convolutional-neural-networks/}{Understanding Locally Connected Layers In Convolutional Neural Networks}
 
 
 
@@ -152,15 +162,16 @@ Please give your answer in terms of the learned convolution feature maps, their 
 \paragraph{A3:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item
+\item \emph{learning rate}: the learning rate controls how fast the model is adpated to the problem. Smaller learning rate requires more training epochs as the smaller changes are made to tune the weights of the model, whereas larger learning rates result in rapid change and require fewer epochs. For the outcome, if the learning rate is too large it can cause the model converge too quickly to a suboptimal solution or diverged, whereas a too small learning rate might cause the process to get stuck.  
 
-% \item
+\item \emph{batch size}: the batch size impacts how quickly a model learns and the stability of the learning process. A smaller batch size are noisy, offering a regularizaing effect and lower generalization error while require less memory for training model. A larger batch size will lead to poor generalization but using a batch equal to the entire dataset guarantees convergence to the global optima of the objective function.
 
-% \item
+(\href{https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/}{How to control the stability of training neural networks with the batch size}; \href{https://medium.com/mini-distill/effect-of-batch-size-on-training-dynamics-21c14f7a716e}{Effect of batch size on training dynamics})
+\item \emph{training time}: generally the training epochs will decide the training time of the model. If the number of training epochs is too small, the model might not reach the optima and give a bad performance. If the number of training epochs is too large, the model might become overfitting to the training data and start to lose performance in terms of generalization to test data.
 
-% \end{enumerate}
+\end{enumerate}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,23 +188,23 @@ Please give your answer in terms of the learned convolution feature maps, their 
 \begin{tabular}[h]{lr}
 \toprule
 Increases computational cost of training & $\square$ \\
-Decreases computational cost of training & $\square$ \\
-Increases computational cost of testing & $\square$ \\
+Decreases computational cost of training & $\blacksquare$ \\
+Increases computational cost of testing & $\blacksquare$ \\
 Decreases computational cost of testing & $\square$ \\
 \midrule
 Increases overfitting & $\square$ \\
-Decreases overfitting & $\square$ \\
-Increases underfitting & $\square$ \\
+Decreases overfitting & $\blacksquare$ \\
+Increases underfitting & $\blacksquare$ \\
 Decreases underfitting & $\square$ \\
 \midrule
-Increases the nonlinearity of the decision function & $\square$ \\
+Increases the nonlinearity of the decision function & $\blacksquare$ \\
 Decreases the nonlinearity of the decision function & $\square$ \\
 \midrule
-Provides local rotational invariance & $\square$ \\
+Provides local rotational invariance & $\blacksquare$ \\
 Provides global rotational invariance & $\square$ \\
 Provides local scale invariance & $\square$ \\
 Provides global scale invariance & $\square$ \\
-Provides local translational invariance & $\square$ \\
+Provides local translational invariance & $\blacksquare$ \\
 Provides global translational invariance & $\square$ \\
 \bottomrule
 \end{tabular}
@@ -212,7 +223,7 @@ Multiple choice.
 1 & $\square$ \\
 2 & $\square$ \\
 4 & $\square$ \\
-It's impossible & $\square$ \\
+It's impossible & $\bullet$ \\
 \bottomrule
 \end{tabular}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -243,22 +254,25 @@ Please read this \href{https://drive.google.com/file/d/16CztlicOOTImvP9ZrtTUNKwL
 \paragraph{A5:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item
+\item No, I don't agree with Dr. Price. Although the mechanisms of Aspirin and Lithium are not understood yet, they both show consistent positive results to patients, or at least no negative effects to the patients. However, for DL algorithms there still exists possibilities for the false predictions. And once it gives a false prediction, it will lead to some irreparable results.
 
-% \item
+I don't feel comfortable using a ‘black box’ algorithm for my medical diagnoses. I would not know the reason why it gives such diagnoses and I don't feel that I could trust it.
 
-% \item
+\item To be ‘good enough’, the accuracy of the algorithm should reach at least 99.99\%. That is 1 false prediction out of 10000 results. These is still really large if we take the number of patients into consideration. There are 7 billion people around the world and if they all use this algorithm to diagonize the disease, there will be 70,000 false predictions. 
 
-% \end{enumerate}
+We could measure the percentage of false negatives as this is actually the worst case for the patients when the model gives predictions. And it would be easier to lower this percentage than the whole accuracy.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pagebreak
 Extra page. Please remember to keep your page length the same.
 
+\item First of all, the physicians using the medical imaging algorithm will remain ultimately responsible for patient care. They need to acquire new skills to do their best for patients before they decide whether or not to adopt the outcome of the algorithms. Second, the company selling the algorithm and the hospital or clinic purchasing it share the same responsibilities as they are the ones that write the code and introduce them to physicians. Lastly, the FDA has to reexamine the safety of this algorithm and redesign their procedure for such AI algorithms approving.
 
+\item This information doesn't change my responses. Although Dr. Nicholas is knowledgable of the field of public health, his opionion can be affected by his personal emotions. There are so many cases where experts hold contradictory views to the same things and some of them should be wrong. Before the wide application of deep learning in health field, I would prefer it has gone through careful and meticulous testing.
+\end{enumerate}
 
 % Please leave the pagebreak
 \pagebreak
@@ -418,9 +432,10 @@ The work for the tutorial can be done in a completely new Python file inside or 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A7:} Please insert a screenshot of the tutorial code output, running on GCP:
 
-% \begin{figure}[t]
-%     \includegraphics[width=\linewidth]{yourscreenshot.png}
-% \end{figure}
+I choose to finish the second one \href{https://www.tensorflow.org/tutorials/quickstart/advanced}{TensorFlow 2 quickstart for experts}. From the screenshot, we can check that GPU is K80 and accuracy results meets our expectation.
+\begin{figure}[htbp]
+    \includegraphics[width=\linewidth]{Q7.png}
+\end{figure}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
