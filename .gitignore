@@ -12,3 +12,4 @@ results/*
 *.fdb_latexmk
 *.aux
 submit/*
+.venv
