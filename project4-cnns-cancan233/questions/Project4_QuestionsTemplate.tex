@@ -97,13 +97,13 @@ should be on this page
 
 \section*{Instructions}
 \begin{itemize}
-  \item 7 questions (Q6 and Q7 with code components).
-  \item \emph{This will take two weeks! Parts are tricky---start early!}.
-  \item Write code where appropriate; feel free to include images or equations.
-  \item Please make this document anonymous.
-  \item This assignment is \textbf{fixed length}, and the pages have been assigned for you in Gradescope. As a result, \textbf{please do NOT add any new pages}. We will provide ample room for you to answer the questions. If you \emph{really} wish for more space, please add a page \emph{at the end of the document}.
-  \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
-  \item Question 6 has a coding component that must be submitted to Gradescope under a separate assignment (Project 4 Written Code (Numpy)) and is due a week after the rest of the written questions.
+    \item 7 questions (Q6 and Q7 with code components).
+    \item \emph{This will take two weeks! Parts are tricky---start early!}.
+    \item Write code where appropriate; feel free to include images or equations.
+    \item Please make this document anonymous.
+    \item This assignment is \textbf{fixed length}, and the pages have been assigned for you in Gradescope. As a result, \textbf{please do NOT add any new pages}. We will provide ample room for you to answer the questions. If you \emph{really} wish for more space, please add a page \emph{at the end of the document}.
+    \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
+    \item Question 6 has a coding component that must be submitted to Gradescope under a separate assignment (Project 4 Written Code (Numpy)) and is due a week after the rest of the written questions.
 \end{itemize}
 
 \section*{Questions}
@@ -113,8 +113,8 @@ should be on this page
 \paragraph{Q1:} Many traditional computer vision algorithms use convolutional filters to extract feature representations, e.g., in SIFT, to which we then often apply machine learning classification techniques. Convolutional neural networks also use filters within a machine learning algorithm.
 
 \begin{enumerate} [(a)]
-\item What is different about the construction of the filters in each of these approaches?
-\item Please declare and explain the advantages and disadvantages of these two approaches.
+    \item What is different about the construction of the filters in each of these approaches?
+    \item Please declare and explain the advantages and disadvantages of these two approaches.
 \end{enumerate}
 \emph{Please answer on next page.}
 
@@ -125,20 +125,20 @@ should be on this page
 
 \begin{enumerate}[(a)]
 
-\item In traditional computer vision algorithms, such as SIFT, the construction of filters are defined manually. For example, SIFT descriptor are constructed based upon the number in every orientation bins based upon the gradients of each pixel. However, the filters in convolutional neural networks are learned during the training process, we only need to define the shape and the number of the filters and the parameters in filters will be tuned during the optimization procedure. 
+    \item In traditional computer vision algorithms, such as SIFT, the construction of filters are defined manually. For example, SIFT descriptor are constructed based upon the number in every orientation bins based upon the gradients of each pixel. However, the filters in convolutional neural networks are learned during the training process, we only need to define the shape and the number of the filters and the parameters in filters will be tuned during the optimization procedure.
 
-\item Filters in traditional computer vision algorithms:
-        \begin{itemize}
-            \item Advantages: it is fast as the feature extraction is predefined and required no training process. It is simpler design and less parameters to set compared to CNN.
-            \item Disadvantages: it is poor generalization and not robust to nonlinear transformations.
-        \end{itemize}
-    Filters in convolutional neural network:
-    \begin{itemize}
-        \item Advantages: it can provide great performance in classification tasks and stongly bio-inspired and very good at generalization.
-        \item Disadvantages: it requires large training set for better performance and demand high memory to store the trained weights of the network. Thus, it is slower than SIFT.
-    \end{itemize}
+    \item Filters in traditional computer vision algorithms:
+          \begin{itemize}
+              \item Advantages: it is fast as the feature extraction is predefined and required no training process. It is simpler design and less parameters to set compared to CNN.
+              \item Disadvantages: it is poor generalization and not robust to nonlinear transformations.
+          \end{itemize}
+          Filters in convolutional neural network:
+          \begin{itemize}
+              \item Advantages: it can provide great performance in classification tasks and stongly bio-inspired and very good at generalization.
+              \item Disadvantages: it requires large training set for better performance and demand high memory to store the trained weights of the network. Thus, it is slower than SIFT.
+          \end{itemize}
 
-    (source: \href{https://tams.informatik.uni-hamburg.de/lectures/2015ws/seminar/ir/pdf/slides/JosipJosifovski-Object_Recognition_SIFT_vs_Convolutional_Neural_Networks.pdf}{Object Recognition SIFT vs Convolutional Neural Networks})
+          (source: \href{https://tams.informatik.uni-hamburg.de/lectures/2015ws/seminar/ir/pdf/slides/JosipJosifovski-Object_Recognition_SIFT_vs_Convolutional_Neural_Networks.pdf}{Object Recognition SIFT vs Convolutional Neural Networks})
 \end{enumerate}
 
 
@@ -149,10 +149,12 @@ should be on this page
 Please give your answer in terms of the learned convolution feature maps, their connections, and the perceptrons in the MLP.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\paragraph{A2:} \href{https://prateekvjoshi.com/2016/04/12/understanding-locally-connected-layers-in-convolutional-neural-networks/}{Understanding Locally Connected Layers In Convolutional Neural Networks}
+\paragraph{A2:}
+
+The difference between the CNN and the \emph{locally-connected} MLP is that CNNs are locally connected layers with shared weights while for the \emph{locally-connected} MLP each pixel positions will have its own weights.Thus, the \emph{locally-connected} MLP needs fewer overall filters that need to be trained as every pixel positions gets its own filter.
 
 
-
+Source: \href{https://prateekvjoshi.com/2016/04/12/understanding-locally-connected-layers-in-convolutional-neural-networks/}{Understanding Locally Connected Layers In Convolutional Neural Networks}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pagebreak
@@ -164,12 +166,12 @@ Please give your answer in terms of the learned convolution feature maps, their 
 
 \begin{enumerate}[(a)]
 
-\item \emph{learning rate}: the learning rate controls how fast the model is adpated to the problem. Smaller learning rate requires more training epochs as the smaller changes are made to tune the weights of the model, whereas larger learning rates result in rapid change and require fewer epochs. For the outcome, if the learning rate is too large it can cause the model converge too quickly to a suboptimal solution or diverged, whereas a too small learning rate might cause the process to get stuck.  
+    \item \emph{learning rate}: the learning rate controls how fast the model is adpated to the problem. Smaller learning rate requires more training epochs as the smaller changes are made to tune the weights of the model, whereas larger learning rates result in rapid change and require fewer epochs. For the outcome, if the learning rate is too large it can cause the model converge too quickly to a suboptimal solution or diverged, whereas a too small learning rate might cause the process to get stuck.
 
-\item \emph{batch size}: the batch size impacts how quickly a model learns and the stability of the learning process. A smaller batch size are noisy, offering a regularizaing effect and lower generalization error while require less memory for training model. A larger batch size will lead to poor generalization but using a batch equal to the entire dataset guarantees convergence to the global optima of the objective function.
+    \item \emph{batch size}: the batch size impacts how quickly a model learns and the stability of the learning process. A smaller batch size are noisy, offering a regularizaing effect and lower generalization error while require less memory for training model. A larger batch size will lead to poor generalization but using a batch equal to the entire dataset guarantees convergence to the global optima of the objective function.
 
-(\href{https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/}{How to control the stability of training neural networks with the batch size}; \href{https://medium.com/mini-distill/effect-of-batch-size-on-training-dynamics-21c14f7a716e}{Effect of batch size on training dynamics})
-\item \emph{training time}: generally the training epochs will decide the training time of the model. If the number of training epochs is too small, the model might not reach the optima and give a bad performance. If the number of training epochs is too large, the model might become overfitting to the training data and start to lose performance in terms of generalization to test data.
+          (\href{https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/}{How to control the stability of training neural networks with the batch size}; \href{https://medium.com/mini-distill/effect-of-batch-size-on-training-dynamics-21c14f7a716e}{Effect of batch size on training dynamics})
+    \item \emph{training time}: generally the training epochs will decide the training time of the model. If the number of training epochs is too small, the model might not reach the optima and give a bad performance. If the number of training epochs is too large, the model might become overfitting to the training data and start to lose performance in terms of generalization to test data.
 
 \end{enumerate}
 
@@ -186,27 +188,27 @@ Please give your answer in terms of the learned convolution feature maps, their 
 
 %%% See the tex for the bottom of the page to leave the optional written justification %%%
 \begin{tabular}[h]{lr}
-\toprule
-Increases computational cost of training & $\square$ \\
-Decreases computational cost of training & $\blacksquare$ \\
-Increases computational cost of testing & $\blacksquare$ \\
-Decreases computational cost of testing & $\square$ \\
-\midrule
-Increases overfitting & $\square$ \\
-Decreases overfitting & $\blacksquare$ \\
-Increases underfitting & $\blacksquare$ \\
-Decreases underfitting & $\square$ \\
-\midrule
-Increases the nonlinearity of the decision function & $\blacksquare$ \\
-Decreases the nonlinearity of the decision function & $\square$ \\
-\midrule
-Provides local rotational invariance & $\blacksquare$ \\
-Provides global rotational invariance & $\square$ \\
-Provides local scale invariance & $\square$ \\
-Provides global scale invariance & $\square$ \\
-Provides local translational invariance & $\blacksquare$ \\
-Provides global translational invariance & $\square$ \\
-\bottomrule
+    \toprule
+    Increases computational cost of training            & $\square$      \\
+    Decreases computational cost of training            & $\blacksquare$ \\
+    Increases computational cost of testing             & $\square$      \\
+    Decreases computational cost of testing             & $\blacksquare$ \\
+    \midrule
+    Increases overfitting                               & $\square$      \\
+    Decreases overfitting                               & $\blacksquare$ \\
+    Increases underfitting                              & $\blacksquare$ \\
+    Decreases underfitting                              & $\square$      \\
+    \midrule
+    Increases the nonlinearity of the decision function & $\square$      \\
+    Decreases the nonlinearity of the decision function & $\blacksquare$ \\
+    \midrule
+    Provides local rotational invariance                & $\blacksquare$ \\
+    Provides global rotational invariance               & $\square$      \\
+    Provides local scale invariance                     & $\square$      \\
+    Provides global scale invariance                    & $\square$      \\
+    Provides local translational invariance             & $\blacksquare$ \\
+    Provides global translational invariance            & $\square$      \\
+    \bottomrule
 \end{tabular}
 
 
@@ -218,19 +220,18 @@ Multiple choice.
 \emph{LaTeX:} Use command  `\textbackslash bullet' ($\bullet$) to fill in the dots.
 
 \begin{tabular}[h]{lc}
-\toprule
-0.5 & $\square$ \\
-1 & $\square$ \\
-2 & $\square$ \\
-4 & $\square$ \\
-It's impossible & $\bullet$ \\
-\bottomrule
+    \toprule
+    0.5             & $\square$ \\
+    1               & $\bullet$ \\
+    2               & $\square$ \\
+    4               & $\square$ \\
+    It's impossible & $\square$ \\
+    \bottomrule
 \end{tabular}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Space for optional justification. Do NOT go past this page!
 \emph{Here:} Feel free to leave optional short written justification if desired.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
@@ -240,13 +241,13 @@ Please read this \href{https://drive.google.com/file/d/16CztlicOOTImvP9ZrtTUNKwL
 
 \begin{enumerate}[(a)]
     \item
-    In the article, physician Dr. Nicholas Price expresses the view that a lack of explainability should not hamper advances in health care, pointing out that Aspirin’s mechanism was not understood for 70 years and that Lithium’s mechanism to treat bipolar disorder is still unknown. Do you agree with Dr. Price? Would you feel comfortable allowing your doctor to rely on a ‘black box’ algorithm for medical diagnoses? (3-4 sentences)
+          In the article, physician Dr. Nicholas Price expresses the view that a lack of explainability should not hamper advances in health care, pointing out that Aspirin’s mechanism was not understood for 70 years and that Lithium’s mechanism to treat bipolar disorder is still unknown. Do you agree with Dr. Price? Would you feel comfortable allowing your doctor to rely on a ‘black box’ algorithm for medical diagnoses? (3-4 sentences)
     \item
-    When deciding whether a medical algorithm is suitable for clinical use, what accuracy would you consider to be ‘good enough’? In which different ways could we measure this? (3-4 sentences)
+          When deciding whether a medical algorithm is suitable for clinical use, what accuracy would you consider to be ‘good enough’? In which different ways could we measure this? (3-4 sentences)
     \item
-    In the event that a medical imaging algorithm makes an error and causes a patient harm, who should be held responsible? \textit{Think about everyone involved: the algorithm engineer, the company selling the algorithm, the FDA approving it, the hospital or clinic purchasing it, the physician using it, etc.} (3-4 sentences)
+          In the event that a medical imaging algorithm makes an error and causes a patient harm, who should be held responsible? \textit{Think about everyone involved: the algorithm engineer, the company selling the algorithm, the FDA approving it, the hospital or clinic purchasing it, the physician using it, etc.} (3-4 sentences)
     \item
-    Nicholas Price is actually a \href{https://drive.google.com/file/d/1bDAqEtW482OJeqMBt5A4AradVa4gf_o9/view}{legal scholar} who specializes in health law at the University of Michigan. Does this information change your responses? (3-4 sentences)
+          Nicholas Price is actually a \href{https://drive.google.com/file/d/1bDAqEtW482OJeqMBt5A4AradVa4gf_o9/view}{legal scholar} who specializes in health law at the University of Michigan. Does this information change your responses? (3-4 sentences)
 
 \end{enumerate}
 
@@ -256,22 +257,22 @@ Please read this \href{https://drive.google.com/file/d/16CztlicOOTImvP9ZrtTUNKwL
 
 \begin{enumerate}[(a)]
 
-\item No, I don't agree with Dr. Price. Although the mechanisms of Aspirin and Lithium are not understood yet, they both show consistent positive results to patients, or at least no negative effects to the patients. However, for DL algorithms there still exists possibilities for the false predictions. And once it gives a false prediction, it will lead to some irreparable results.
+    \item No, I don't agree with Dr. Price. Although the mechanisms of Aspirin and Lithium are not understood yet, they both show consistent positive results to patients, or at least no negative effects to the patients. However, for DL algorithms there still exists possibilities for the false predictions. And once it gives a false prediction, it will lead to some irreparable results.
 
-I don't feel comfortable using a ‘black box’ algorithm for my medical diagnoses. I would not know the reason why it gives such diagnoses and I don't feel that I could trust it.
+          I don't feel comfortable using a ‘black box’ algorithm for my medical diagnoses. I would not know the reason why it gives such diagnoses and I don't feel that I could trust it.
 
-\item To be ‘good enough’, the accuracy of the algorithm should reach at least 99.99\%. That is 1 false prediction out of 10000 results. These is still really large if we take the number of patients into consideration. There are 7 billion people around the world and if they all use this algorithm to diagonize the disease, there will be 70,000 false predictions. 
+    \item To be ‘good enough’, the accuracy of the algorithm should reach at least 99.99\%. That is 1 false prediction out of 10000 results. These is still really large if we take the number of patients into consideration. There are 7 billion people around the world and if they all use this algorithm to diagonize the disease, there will be 70,000 false predictions.
 
-We could measure the percentage of false negatives as this is actually the worst case for the patients when the model gives predictions. And it would be easier to lower this percentage than the whole accuracy.
+          We could measure the percentage of false negatives as this is actually the worst case for the patients when the model gives predictions. And it would be easier to lower this percentage than the whole accuracy.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\pagebreak
-Extra page. Please remember to keep your page length the same.
+          \pagebreak
+          Extra page. Please remember to keep your page length the same.
 
-\item First of all, the physicians using the medical imaging algorithm will remain ultimately responsible for patient care. They need to acquire new skills to do their best for patients before they decide whether or not to adopt the outcome of the algorithms. Second, the company selling the algorithm and the hospital or clinic purchasing it share the same responsibilities as they are the ones that write the code and introduce them to physicians. Lastly, the FDA has to reexamine the safety of this algorithm and redesign their procedure for such AI algorithms approving.
+    \item First of all, the physicians using the medical imaging algorithm will remain ultimately responsible for patient care. They need to acquire new skills to do their best for patients before they decide whether or not to adopt the outcome of the algorithms. Second, the company selling the algorithm and the hospital or clinic purchasing it share the same responsibilities as they are the ones that write the code and introduce them to physicians. Lastly, the FDA has to reexamine the safety of this algorithm and redesign their procedure for such AI algorithms approving.
 
-\item This information doesn't change my responses. Although Dr. Nicholas is knowledgable of the field of public health, his opionion can be affected by his personal emotions. There are so many cases where experts hold contradictory views to the same things and some of them should be wrong. Before the wide application of deep learning in health field, I would prefer it has gone through careful and meticulous testing.
+    \item This information doesn't change my responses. Although Dr. Nicholas is knowledgable of the field of public health, his opionion can be affected by his personal emotions. There are so many cases where experts hold contradictory views to the same things and some of them should be wrong. Before the wide application of deep learning in health field, I would prefer it has gone through careful and meticulous testing.
 \end{enumerate}
 
 % Please leave the pagebreak
@@ -291,7 +292,7 @@ These distances from the hyperplane are sometimes called `logits' (hence $l$) wh
 Often we want to talk about the confidence of a classification. So, to turn our logits into a probability distribution $\mathbf{p}$ for our ten classes, we apply the \emph{softmax} function:
 \begin{equation}
     p_j = \frac{e^{l_j}}{\sum_je^{l_j}}
-   \label{eq:softmax}
+    \label{eq:softmax}
 \end{equation}
 Each $p_j$ will be positive, and $\sum_jp_j = 1$, and so softmax is guaranteed to output a probability distribution. Picking the most probable class provides our network's prediction.
 
@@ -335,41 +336,41 @@ Onto the training algorithm. The loss is computed once for every different train
 
 Neural networks are usually optimized using gradient descent. For each training example in each epoch, we compute gradients via backpropagation (an application of the chain rule in differentiation) to update the classifier parameters via a learning rate $\lambda$:
 \begin{equation}
-w_{ij} = w_{ij} - \lambda\frac{\partial L}{\partial w_{ij}}, \\
+    w_{ij} = w_{ij} - \lambda\frac{\partial L}{\partial w_{ij}}, \\
 \end{equation}
 \begin{equation}
-b_j = b_j - \lambda\frac{\partial L}{\partial b_j}.
+    b_j = b_j - \lambda\frac{\partial L}{\partial b_j}.
 \end{equation}
 
 We must deduce $\frac{\partial L}{\partial w_{ij}}$ and $\frac{\partial L}{\partial b_j}$ as expressions in terms of $x_i$ and $p_j$.
 
 \emph{Intuition:} Let's just consider the weights. Recall that our network has one layer of neurons followed by a softmax function. To compute the change in the cross-entropy loss with respect to neuron weights $\frac{\partial L}{\partial w_{ij}}$, we will need to compute and chain together three different terms:
 \begin{enumerate}
-\itemsep0em
-\listparindent0em
-\topsep0em
-\parsep0em
-\partopsep0em
-\item the change in the loss with respect to the softmax output $\frac{\delta L}{\delta p_j}$,
-\item the change in the softmax output with respect to the neuron output $\frac{\delta p_j}{\delta l_j}$, and
-\item the change in the neuron output with respect to the neuron weights $\frac{\delta l_j}{w_{ij}}$.
+    \itemsep0em
+          \listparindent0em
+          \topsep0em
+          \parsep0em
+          \partopsep0em
+    \item the change in the loss with respect to the softmax output $\frac{\delta L}{\delta p_j}$,
+    \item the change in the softmax output with respect to the neuron output $\frac{\delta p_j}{\delta l_j}$, and
+    \item the change in the neuron output with respect to the neuron weights $\frac{\delta l_j}{w_{ij}}$.
 \end{enumerate}
 We must derive each individually, and then formulate the final term via the chain rule. The biases follow in a similar fashion.
 
 The derivation is beyond the scope of this class, and so we provide them here:
 \begin{equation}
-\frac{\delta L}{\delta w_{ij}} = \frac{\delta L}{\delta p_a} \frac{\delta p_a}{\delta l_j} \frac{\delta l_j}{w_{ij}} =\begin{cases}
-x_i(p_j-1), a = j\\
-x_ip_j,  a\neq j
-\end{cases}
-\label{eq:wupdate}
+    \frac{\delta L}{\delta w_{ij}} = \frac{\delta L}{\delta p_a} \frac{\delta p_a}{\delta l_j} \frac{\delta l_j}{w_{ij}} =\begin{cases}
+        x_i(p_j-1), a = j \\
+        x_ip_j,  a\neq j
+    \end{cases}
+    \label{eq:wupdate}
 \end{equation}
 \begin{equation}
-\frac{\delta L}{\delta b_j} = \frac{\delta L}{\delta p_a} \frac{\delta p_a}{\delta l_j} \frac{\delta l_j}{b_j} =\begin{cases}
-(p_j-1), a = j\\
-p_j,  a\neq j
-\end{cases}
-\label{eq:bupdate}
+    \frac{\delta L}{\delta b_j} = \frac{\delta L}{\delta p_a} \frac{\delta p_a}{\delta l_j} \frac{\delta l_j}{b_j} =\begin{cases}
+        (p_j-1), a = j \\
+        p_j,  a\neq j
+    \end{cases}
+    \label{eq:bupdate}
 \end{equation}
 Here, $a$ is the predicted class label and $j$ is the true class label. An alternative form you might see shows $\frac{\delta L}{\delta w_{ij}} = x_i(p_j-y_j)$ and $\frac{\delta L}{\delta b_j} = p_j-y_j$ where $y_j=1$ if class $j$ is the true label for $x$, and $y_j = 0$ if $j$ is not the true label.
 
@@ -392,28 +393,28 @@ Please upload your completed \texttt{model.py} to Gradescope under the assignmen
 
     \item How well did each model perform on each dataset? Please use this table to structure your response.
 
-    \begin{itemize}
-        \item NN on MNIST: xx\% (highest accuracy)
-        	\begin{itemize}
-        	\item Epoch 0 loss: xx     Accuracy: xx\%
-        	\item Epoch 9 loss: xx     Accuracy: xx\%
-        	\end{itemize}
-        \item NN+SVM on MNIST: xx\% (highest accuracy)
-        	\begin{itemize}
-        	\item Epoch 0 loss: xx     Accuracy: xx\%
-        	\item Epoch 9 loss: xx     Accuracy: xx\%
-        	\end{itemize}
-        \item NN on SceneRec: xx\% (highest accuracy)
-        	\begin{itemize}
-        	\item Epoch 0 loss: xx     Accuracy: xx\%
-        	\item Epoch 9 loss: xx     Accuracy: xx\%
-        	\end{itemize}
-        \item NN+SVM on SceneRec: xx\% (highest accuracy)
-        	\begin{itemize}
-        	\item Epoch 0 loss: xx     Accuracy: xx\%
-        	\item Epoch 9 loss: xx     Accuracy: xx\%
-    	    s\end{itemize}
-    \end{itemize}
+          \begin{itemize}
+              \item NN on MNIST: xx\% (highest accuracy)
+                    \begin{itemize}
+                        \item Epoch 0 loss: xx     Accuracy: xx\%
+                        \item Epoch 9 loss: xx     Accuracy: xx\%
+                    \end{itemize}
+              \item NN+SVM on MNIST: xx\% (highest accuracy)
+                    \begin{itemize}
+                        \item Epoch 0 loss: xx     Accuracy: xx\%
+                        \item Epoch 9 loss: xx     Accuracy: xx\%
+                    \end{itemize}
+              \item NN on SceneRec: xx\% (highest accuracy)
+                    \begin{itemize}
+                        \item Epoch 0 loss: xx     Accuracy: xx\%
+                        \item Epoch 9 loss: xx     Accuracy: xx\%
+                    \end{itemize}
+              \item NN+SVM on SceneRec: xx\% (highest accuracy)
+                    \begin{itemize}
+                        \item Epoch 0 loss: xx     Accuracy: xx\%
+                        \item Epoch 9 loss: xx     Accuracy: xx\%
+                              s\end{itemize}
+          \end{itemize}
 
 \end{enumerate}
 
@@ -422,8 +423,8 @@ Please upload your completed \texttt{model.py} to Gradescope under the assignmen
 \pagebreak
 \paragraph{Q7:} Follow the \href{https://browncsci1430.github.io/webpage/resources/gcp_guide/}{GCP guide} to set up GCP. \emph{Note:} This is tricky, and it will take you some time to become familiar with the system! Once finished, complete one of these two Tensorflow MNIST tutorials on GCP:
 \begin{itemize}
-	\item \href{https://www.tensorflow.org/tutorials/quickstart/beginner}{TensorFlow 2 quickstart for beginners}
-	\item \href{https://www.tensorflow.org/tutorials/quickstart/advanced}{TensorFlow 2 quickstart for experts}
+    \item \href{https://www.tensorflow.org/tutorials/quickstart/beginner}{TensorFlow 2 quickstart for beginners}
+    \item \href{https://www.tensorflow.org/tutorials/quickstart/advanced}{TensorFlow 2 quickstart for experts}
 \end{itemize}
 
 The work for the tutorial can be done in a completely new Python file inside or outside of your project code (you won't have to turn it in).

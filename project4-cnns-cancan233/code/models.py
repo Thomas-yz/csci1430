@@ -4,9 +4,9 @@ CS1430 - Computer Vision
 Brown University
 """
 
+from numpy.lib.function_base import cov
 import tensorflow as tf
-from tensorflow.keras.layers import \
-    Conv2D, MaxPool2D, Dropout, Flatten, Dense
+from tensorflow.keras.layers import Conv2D, MaxPool2D, Dropout, Flatten, Dense
 
 import hyperparameters as hp
 
@@ -20,7 +20,7 @@ class YourModel(tf.keras.Model):
         # TODO: Select an optimizer for your network (see the documentation
         #       for tf.keras.optimizers)
 
-        self.optimizer = None
+        self.optimizer = tf.keras.optimizers.Adam
 
         # TODO: Build your own convolutional neural network, using Dropout at
         #       least once. The input image will be passed through each Keras
@@ -52,7 +52,19 @@ class YourModel(tf.keras.Model):
         #       Note: Flatten is a very useful layer. You shouldn't have to
         #             explicitly reshape any tensors anywhere in your network.
 
-        self.architecture = []
+        self.architecture = [
+            Conv2D(filters=32, kernel_size=3, activation="relu"),
+            MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding="valid"),
+            Conv2D(filters=16, kernel_size=5, activation="relu"),
+            MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding="valid"),
+            #      Conv2D(filters=64, kernel_size=3, activation="relu"),
+            Dense(128, activation="relu"),
+            Dropout(rate=0.5),
+            Flatten(),
+            Dense(32, activation="relu"),
+            #      Dense(64, activation="relu"),
+            Dense(15, activation="softmax"),
+        ]
 
     def call(self, x):
         """ Passes input image through the network. """
@@ -68,8 +80,7 @@ class YourModel(tf.keras.Model):
 
         # TODO: Select a loss function for your network (see the documentation
         #       for tf.keras.losses)
-
-        pass
+        return tf.keras.losses.MAE(labels, predictions)
 
 
 class VGGModel(tf.keras.Model):
@@ -85,41 +96,28 @@ class VGGModel(tf.keras.Model):
 
         self.vgg16 = [
             # Block 1
-            Conv2D(64, 3, 1, padding="same",
-                   activation="relu", name="block1_conv1"),
-            Conv2D(64, 3, 1, padding="same",
-                   activation="relu", name="block1_conv2"),
+            Conv2D(64, 3, 1, padding="same", activation="relu", name="block1_conv1"),
+            Conv2D(64, 3, 1, padding="same", activation="relu", name="block1_conv2"),
             MaxPool2D(2, name="block1_pool"),
             # Block 2
-            Conv2D(128, 3, 1, padding="same",
-                   activation="relu", name="block2_conv1"),
-            Conv2D(128, 3, 1, padding="same",
-                   activation="relu", name="block2_conv2"),
+            Conv2D(128, 3, 1, padding="same", activation="relu", name="block2_conv1"),
+            Conv2D(128, 3, 1, padding="same", activation="relu", name="block2_conv2"),
             MaxPool2D(2, name="block2_pool"),
             # Block 3
-            Conv2D(256, 3, 1, padding="same",
-                   activation="relu", name="block3_conv1"),
-            Conv2D(256, 3, 1, padding="same",
-                   activation="relu", name="block3_conv2"),
-            Conv2D(256, 3, 1, padding="same",
-                   activation="relu", name="block3_conv3"),
+            Conv2D(256, 3, 1, padding="same", activation="relu", name="block3_conv1"),
+            Conv2D(256, 3, 1, padding="same", activation="relu", name="block3_conv2"),
+            Conv2D(256, 3, 1, padding="same", activation="relu", name="block3_conv3"),
             MaxPool2D(2, name="block3_pool"),
             # Block 4
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block4_conv1"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block4_conv2"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block4_conv3"),
+            Conv2D(512, 3, 1, padding="same", activation="relu", name="block4_conv1"),
+            Conv2D(512, 3, 1, padding="same", activation="relu", name="block4_conv2"),
+            Conv2D(512, 3, 1, padding="same", activation="relu", name="block4_conv3"),
             MaxPool2D(2, name="block4_pool"),
             # Block 5
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block5_conv1"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block5_conv2"),
-            Conv2D(512, 3, 1, padding="same",
-                   activation="relu", name="block5_conv3"),
-            MaxPool2D(2, name="block5_pool")
+            Conv2D(512, 3, 1, padding="same", activation="relu", name="block5_conv1"),
+            Conv2D(512, 3, 1, padding="same", activation="relu", name="block5_conv2"),
+            Conv2D(512, 3, 1, padding="same", activation="relu", name="block5_conv3"),
+            MaxPool2D(2, name="block5_pool"),
         ]
 
         # TODO: Make all layers in self.vgg16 non-trainable. This will freeze the
