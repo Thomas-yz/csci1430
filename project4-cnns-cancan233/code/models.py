@@ -90,7 +90,7 @@ class VGGModel(tf.keras.Model):
         # TODO: Select an optimizer for your network (see the documentation
         #       for tf.keras.optimizers)
 
-        self.optimizer = None
+        self.optimizer = tf.keras.optimizers.Adam
 
         # Don't change the below:
 
@@ -123,10 +123,11 @@ class VGGModel(tf.keras.Model):
         # TODO: Make all layers in self.vgg16 non-trainable. This will freeze the
         #       pretrained VGG16 weights into place so that only the classificaiton
         #       head is trained.
-
+        for layer in self.vgg16:
+            layer.trainable = False
         # TODO: Write a classification head for our 15-scene classification task.
 
-        self.head = []
+        self.head = [Dense(15, activation='softmax')]
 
         # Don't change the below:
         self.vgg16 = tf.keras.Sequential(self.vgg16, name="vgg_base")
@@ -147,4 +148,5 @@ class VGGModel(tf.keras.Model):
         # TODO: Select a loss function for your network (see the documentation
         #       for tf.keras.losses)
 
-        pass
+        # pass
+        return tf.keras.losses.MAE(labels, predictions)

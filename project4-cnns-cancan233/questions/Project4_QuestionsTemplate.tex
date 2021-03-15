@@ -151,8 +151,9 @@ Please give your answer in terms of the learned convolution feature maps, their 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A2:}
 
-The difference between the CNN and the \emph{locally-connected} MLP is that CNNs are locally connected layers with shared weights while for the \emph{locally-connected} MLP each pixel positions will have its own weights.Thus, the \emph{locally-connected} MLP needs fewer overall filters that need to be trained as every pixel positions gets its own filter.
+In convolutional neural network, for each position (x, y), the dot product summation between the kernel and image values around the point is calculated for next layer. For the whole image, the kernel will remain the same everywhere, which means the weights is shared among the whole image. However, for \emph{locally-connected} MLP, for each position (x,y), it will have its private kernel filter whose weights is not shared globally.
 
+Comparing these two methods, for CNN, we tend to miss out on some subtle nuances of spatial arrangements as the features are learned using the filter that applies to the whole image. Using \emph{locally-connected} MLP might be helpful for such subtle differences detections. For the connections, the connections are similar but for CNN we are having filtering moving across the image while for \emph{locally-connected} MLP, we have different filters at each position. In terms of the preceptrons in the MLP, with weights unshared and being private to each pixel, \emph{locally-connected} MLP will need more filters to be trained compared to the CNN model.
 
 Source: \href{https://prateekvjoshi.com/2016/04/12/understanding-locally-connected-layers-in-convolutional-neural-networks/}{Understanding Locally Connected Layers In Convolutional Neural Networks}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -170,7 +171,7 @@ Source: \href{https://prateekvjoshi.com/2016/04/12/understanding-locally-connect
 
     \item \emph{batch size}: the batch size impacts how quickly a model learns and the stability of the learning process. A smaller batch size are noisy, offering a regularizaing effect and lower generalization error while require less memory for training model. A larger batch size will lead to poor generalization but using a batch equal to the entire dataset guarantees convergence to the global optima of the objective function.
 
-          (\href{https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/}{How to control the stability of training neural networks with the batch size}; \href{https://medium.com/mini-distill/effect-of-batch-size-on-training-dynamics-21c14f7a716e}{Effect of batch size on training dynamics})
+          (Source: \href{https://machinelearningmastery.com/how-to-control-the-speed-and-stability-of-training-neural-networks-with-gradient-descent-batch-size/}{How to control the stability of training neural networks with the batch size}; \href{https://medium.com/mini-distill/effect-of-batch-size-on-training-dynamics-21c14f7a716e}{Effect of batch size on training dynamics})
     \item \emph{training time}: generally the training epochs will decide the training time of the model. If the number of training epochs is too small, the model might not reach the optima and give a bad performance. If the number of training epochs is too large, the model might become overfitting to the training data and start to lose performance in terms of generalization to test data.
 
 \end{enumerate}
