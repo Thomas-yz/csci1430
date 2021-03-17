@@ -15,8 +15,11 @@ import hyperparameters as hp
 from models import YourModel, VGGModel
 from preprocess import Datasets
 from skimage.transform import resize
-from tensorboard_utils import \
-        ImageLabelingLogger, ConfusionMatrixLogger, CustomModelSaver
+from tensorboard_utils import (
+    ImageLabelingLogger,
+    ConfusionMatrixLogger,
+    CustomModelSaver,
+)
 
 from skimage.io import imread
 from lime import lime_image
@@ -24,7 +27,7 @@ from skimage.segmentation import mark_boundaries
 from matplotlib import pyplot as plt
 import numpy as np
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 
 def parse_args():
@@ -32,45 +35,53 @@ def parse_args():
 
     parser = argparse.ArgumentParser(
         description="Let's train some neural nets!",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
-        '--task',
+        "--task",
         required=True,
-        choices=['1', '3'],
-        help='''Which task of the assignment to run -
-        training from scratch (1), or fine tuning VGG-16 (3).''')
+        choices=["1", "3"],
+        help="""Which task of the assignment to run -
+        training from scratch (1), or fine tuning VGG-16 (3).""",
+    )
     parser.add_argument(
-        '--data',
-        default='..'+os.sep+'data'+os.sep,
-        help='Location where the dataset is stored.')
+        "--data",
+        default=".." + os.sep + "data" + os.sep,
+        help="Location where the dataset is stored.",
+    )
     parser.add_argument(
-        '--load-vgg',
-        default='vgg16_imagenet.h5',
-        help='''Path to pre-trained VGG-16 file (only applicable to
-        task 3).''')
+        "--load-vgg",
+        default="vgg16_imagenet.h5",
+        help="""Path to pre-trained VGG-16 file (only applicable to
+        task 3).""",
+    )
     parser.add_argument(
-        '--load-checkpoint',
+        "--load-checkpoint",
         default=None,
-        help='''Path to model checkpoint file (should end with the
+        help="""Path to model checkpoint file (should end with the
         extension .h5). Checkpoints are automatically saved when you
         train your model. If you want to continue training from where
-        you left off, this is how you would load your weights.''')
+        you left off, this is how you would load your weights.""",
+    )
     parser.add_argument(
-        '--confusion',
-        action='store_true',
-        help='''Log a confusion matrix at the end of each
+        "--confusion",
+        action="store_true",
+        help="""Log a confusion matrix at the end of each
         epoch (viewable in Tensorboard). This is turned off
-        by default as it takes a little bit of time to complete.''')
+        by default as it takes a little bit of time to complete.""",
+    )
     parser.add_argument(
-        '--evaluate',
-        action='store_true',
-        help='''Skips training and evaluates on the test set once.
+        "--evaluate",
+        action="store_true",
+        help="""Skips training and evaluates on the test set once.
         You can use this to test an already trained model by loading
-        its checkpoint.''')
+        its checkpoint.""",
+    )
     parser.add_argument(
-        '--lime-image',
-        default='test/Bedroom/image_0003.jpg',
-        help='''Name of an image in the dataset to use for LIME evaluation.''')
+        "--lime-image",
+        default="test/Bedroom/image_0003.jpg",
+        help="""Name of an image in the dataset to use for LIME evaluation.""",
+    )
 
     return parser.parse_args()
 
@@ -81,11 +92,13 @@ def LIME_explainer(model, path, preprocess_fn):
     visual explanations using the LIME model
     """
 
-    def image_and_mask(title, positive_only=True, num_features=5,
-                       hide_rest=True):
+    def image_and_mask(title, positive_only=True, num_features=5, hide_rest=True):
         temp, mask = explanation.get_image_and_mask(
-            explanation.top_labels[0], positive_only=positive_only,
-            num_features=num_features, hide_rest=hide_rest)
+            explanation.top_labels[0],
+            positive_only=positive_only,
+            num_features=num_features,
+            hide_rest=hide_rest,
+        )
         plt.imshow(mark_boundaries(temp / 2 + 0.5, mask))
         plt.title(title)
         plt.show()
@@ -99,28 +112,41 @@ def LIME_explainer(model, path, preprocess_fn):
     explainer = lime_image.LimeImageExplainer()
 
     explanation = explainer.explain_instance(
-        image.astype('double'), model.predict, top_labels=5, hide_color=0,
-        num_samples=1000)
+        image.astype("double"),
+        model.predict,
+        top_labels=5,
+        hide_color=0,
+        num_samples=1000,
+    )
 
     # The top 5 superpixels that are most positive towards the class with the
     # rest of the image hidden
-    image_and_mask("Top 5 superpixels", positive_only=True, num_features=5,
-                   hide_rest=True)
+    image_and_mask(
+        "Top 5 superpixels", positive_only=True, num_features=5, hide_rest=True
+    )
 
     # The top 5 superpixels with the rest of the image present
-    image_and_mask("Top 5 with the rest of the image present",
-                   positive_only=True, num_features=5, hide_rest=False)
+    image_and_mask(
+        "Top 5 with the rest of the image present",
+        positive_only=True,
+        num_features=5,
+        hide_rest=False,
+    )
 
     # The 'pros and cons' (pros in green, cons in red)
-    image_and_mask("Pros(green) and Cons(red)",
-                   positive_only=False, num_features=10, hide_rest=False)
+    image_and_mask(
+        "Pros(green) and Cons(red)",
+        positive_only=False,
+        num_features=10,
+        hide_rest=False,
+    )
 
     # Select the same class explained on the figures above.
     ind = explanation.top_labels[0]
     # Map each explanation weight to the corresponding superpixel
     dict_heatmap = dict(explanation.local_exp[ind])
     heatmap = np.vectorize(dict_heatmap.get)(explanation.segments)
-    plt.imshow(heatmap, cmap='RdBu', vmin=-heatmap.max(), vmax=heatmap.max())
+    plt.imshow(heatmap, cmap="RdBu", vmin=-heatmap.max(), vmax=heatmap.max())
     plt.colorbar()
     plt.title("Map each explanation weight to the corresponding superpixel")
     plt.show()
@@ -132,11 +158,10 @@ def train(model, datasets, checkpoint_path, logs_path, init_epoch):
     # Keras callbacks for training
     callback_list = [
         tf.keras.callbacks.TensorBoard(
-            log_dir=logs_path,
-            update_freq='batch',
-            profile_batch=0),
+            log_dir=logs_path, update_freq="batch", profile_batch=0
+        ),
         ImageLabelingLogger(logs_path, datasets),
-        CustomModelSaver(checkpoint_path, ARGS.task, hp.max_num_weights)
+        CustomModelSaver(checkpoint_path, ARGS.task, hp.max_num_weights),
     ]
 
     # Include confusion logger in callbacks if flag set
@@ -194,34 +219,35 @@ def main():
 
     datasets = Datasets(ARGS.data, ARGS.task)
 
-    if ARGS.task == '1':
+    if ARGS.task == "1":
         model = YourModel()
         model(tf.keras.Input(shape=(hp.img_size, hp.img_size, 3)))
-        checkpoint_path = "checkpoints" + os.sep + \
-            "your_model" + os.sep + timestamp + os.sep
-        logs_path = "logs" + os.sep + "your_model" + \
-            os.sep + timestamp + os.sep
+        checkpoint_path = (
+            "checkpoints" + os.sep + "your_model" + os.sep + timestamp + os.sep
+        )
+        logs_path = "logs" + os.sep + "your_model" + os.sep + timestamp + os.sep
 
         # Print summary of model
-        model.summary()
+        model.architecture.summary()
+        # exit()
     else:
         model = VGGModel()
-        checkpoint_path = "checkpoints" + os.sep + \
-            "vgg_model" + os.sep + timestamp + os.sep
-        logs_path = "logs" + os.sep + "vgg_model" + \
-            os.sep + timestamp + os.sep
+        checkpoint_path = (
+            "checkpoints" + os.sep + "vgg_model" + os.sep + timestamp + os.sep
+        )
+        logs_path = "logs" + os.sep + "vgg_model" + os.sep + timestamp + os.sep
         model(tf.keras.Input(shape=(224, 224, 3)))
 
         # Print summaries for both parts of the model
         model.vgg16.summary()
         model.head.summary()
-
+        # exit()
         # Load base of VGG model
         model.vgg16.load_weights(ARGS.load_vgg, by_name=True)
 
     # Load checkpoints
     if ARGS.load_checkpoint is not None:
-        if ARGS.task == '1':
+        if ARGS.task == "1":
             model.load_weights(ARGS.load_checkpoint, by_name=False)
         else:
             model.head.load_weights(ARGS.load_checkpoint, by_name=False)
@@ -234,7 +260,8 @@ def main():
     model.compile(
         optimizer=model.optimizer,
         loss=model.loss_fn,
-        metrics=["sparse_categorical_accuracy"])
+        metrics=["sparse_categorical_accuracy"],
+    )
 
     if ARGS.evaluate:
         test(model, datasets.test_data)

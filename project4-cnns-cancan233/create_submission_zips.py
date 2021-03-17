@@ -30,15 +30,22 @@ def main():
             # Try navigating to directory where script is
             os.chdir(os.path.dirname(sys.argv[0]))
             if not code_dir.exists():
-                print_err("Failed finding code/ directory. Please make " +
-                          "sure that you are running this script from within the " +
-                          "directory in which create_submission_zip.py is " +
-                          "located and that the code/ directory has not been " +
-                          "renamed.")
+                print_err(
+                    "Failed finding code/ directory. Please make "
+                    + "sure that you are running this script from within the "
+                    + "directory in which create_submission_zip.py is "
+                    + "located and that the code/ directory has not been "
+                    + "renamed."
+                )
                 sys.exit(1)
 
-    required_code_files = ["run.py", "hyperparameters.py", "models.py",
-                           "preprocess.py", "tensorboard_utils.py"]
+    required_code_files = [
+        "run.py",
+        "hyperparameters.py",
+        "models.py",
+        "preprocess.py",
+        "tensorboard_utils.py",
+    ]
 
     # Check that required code files exist
     for code_file in required_code_files:
@@ -79,10 +86,7 @@ def main():
         shutil.copy(writeup_file, temp_writeup_dir)
 
     # Make code_writeup.zip
-    shutil.make_archive(
-        "code_writeup",
-        format="zip",
-        root_dir=temp_dir)
+    shutil.make_archive("code_writeup", format="zip", root_dir=temp_dir)
     shutil.rmtree(temp_dir)
 
     your_model_check_dir = Path("code") / "checkpoints" / "your_model"
@@ -90,15 +94,17 @@ def main():
 
     # Find best weight files
     def get_best_weights(name):
-        check_dir = your_model_check_dir \
-            if name == "your" \
-            else vgg_model_check_dir
+        check_dir = your_model_check_dir if name == "your" else vgg_model_check_dir
 
         if not check_dir.exists():
-            print_warn("No checkpoint directory found for " + name + "_model. " +
-                       "If you do have weights saved that you want to submit, " +
-                       "please make sure they are in the checkpoints/ directory " +
-                       "and that the structure of the directory is unchanged.")
+            print_warn(
+                "No checkpoint directory found for "
+                + name
+                + "_model. "
+                + "If you do have weights saved that you want to submit, "
+                + "please make sure they are in the checkpoints/ directory "
+                + "and that the structure of the directory is unchanged."
+            )
         else:
             max_acc = 0
             max_acc_file = ""
@@ -106,8 +112,9 @@ def main():
             for root, _, files in os.walk(check_dir):
                 for filename in files:
                     if filename.endswith(".h5"):
-                        file_acc = float(re.findall(
-                            r"[+-]?\d+\.\d+", filename.split("acc")[-1])[0])
+                        file_acc = float(
+                            re.findall(r"[+-]?\d+\.\d+", filename.split("acc")[-1])[0]
+                        )
 
                         if file_acc > max_acc:
                             max_acc = file_acc
@@ -117,10 +124,7 @@ def main():
                 # Create temp directory for copying weights to
                 temp_dir = tempfile.mkdtemp()
                 shutil.copy(max_acc_file, temp_dir)
-                shutil.make_archive(
-                    name + "_weights",
-                    format="zip",
-                    root_dir=temp_dir)
+                shutil.make_archive(name + "_weights", format="zip", root_dir=temp_dir)
                 shutil.rmtree(temp_dir)
             else:
                 print_warn("No weight files found for " + name + "_model.")

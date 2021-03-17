@@ -4,9 +4,17 @@ CS1430 - Computer Vision
 Brown University
 """
 
+from warnings import filterwarnings
 from numpy.lib.function_base import cov
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, MaxPool2D, Dropout, Flatten, Dense
+from tensorflow.keras.layers import (
+    Conv2D,
+    MaxPool2D,
+    Dropout,
+    Flatten,
+    Dense,
+    BatchNormalization,
+)
 
 import hyperparameters as hp
 
@@ -20,8 +28,10 @@ class YourModel(tf.keras.Model):
         # TODO: Select an optimizer for your network (see the documentation
         #       for tf.keras.optimizers)
 
-        self.optimizer = tf.keras.optimizers.Adam
-
+        # self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
+        self.optimizer = tf.keras.optimizers.SGD(
+            learning_rate=hp.learning_rate, momentum=hp.momentum
+        )
         # TODO: Build your own convolutional neural network, using Dropout at
         #       least once. The input image will be passed through each Keras
         #       layer in self.architecture sequentially. Refer to the imports
@@ -53,25 +63,83 @@ class YourModel(tf.keras.Model):
         #             explicitly reshape any tensors anywhere in your network.
 
         self.architecture = [
-            Conv2D(filters=32, kernel_size=3, activation="relu"),
+            Conv2D(filters=64, kernel_size=3, activation="relu"),
             MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding="valid"),
-            Conv2D(filters=16, kernel_size=5, activation="relu"),
+            Conv2D(filters=64, kernel_size=3, activation="relu"),
             MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding="valid"),
-            #      Conv2D(filters=64, kernel_size=3, activation="relu"),
+            Flatten(),
             Dense(128, activation="relu"),
             Dropout(rate=0.5),
-            Flatten(),
             Dense(32, activation="relu"),
-            #      Dense(64, activation="relu"),
+            Dropout(rate=0.5),
             Dense(15, activation="softmax"),
         ]
+
+        # self.architecture = [
+        #     Conv2D(
+        #         filters=64,
+        #         kernel_size=3,
+        #         strides=(1, 1),
+        #         padding="same",
+        #         activation="relu",
+        #     ),
+        #     BatchNormalization(),
+        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
+        #     Conv2D(
+        #         filters=128,
+        #         kernel_size=3,
+        #         strides=(1, 1),
+        #         padding="same",
+        #         activation="relu",
+        #     ),
+        #     BatchNormalization(),
+        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
+        #     Conv2D(
+        #         filters=256,
+        #         kernel_size=3,
+        #         strides=(1, 1),
+        #         padding="same",
+        #         activation="relu",
+        #     ),
+        #     BatchNormalization(),
+        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
+        #     Conv2D(
+        #         filters=256,
+        #         kernel_size=3,
+        #         strides=(1, 1),
+        #         padding="same",
+        #         activation="relu",
+        #     ),
+        #     BatchNormalization(),
+        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
+        #     Conv2D(
+        #         filters=256,
+        #         kernel_size=3,
+        #         strides=(1, 1),
+        #         padding="same",
+        #         activation="relu",
+        #     ),
+        #     BatchNormalization(),
+        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
+        #     Flatten(),
+        #     Dense(
+        #         512,
+        #         activation="relu",
+        #     ),
+        #     Dropout(rate=0.5),
+        #     BatchNormalization(),
+        #     Dense(hp.num_classes, activation="softmax"),
+        # ]
+
+        self.architecture = tf.keras.Sequential(self.architecture)
 
     def call(self, x):
         """ Passes input image through the network. """
 
-        for layer in self.architecture:
-            x = layer(x)
-
+        # for layer in self.architecture:
+        #     x = layer(x)
+        x = self.architecture(x)
+        
         return x
 
     @staticmethod
@@ -80,7 +148,7 @@ class YourModel(tf.keras.Model):
 
         # TODO: Select a loss function for your network (see the documentation
         #       for tf.keras.losses)
-        return tf.keras.losses.MAE(labels, predictions)
+        return tf.keras.losses.sparse_categorical_crossentropy(labels, predictions)
 
 
 class VGGModel(tf.keras.Model):
@@ -127,7 +195,16 @@ class VGGModel(tf.keras.Model):
             layer.trainable = False
         # TODO: Write a classification head for our 15-scene classification task.
 
-        self.head = [Dense(15, activation='softmax')]
+        self.head = [
+            Flatten(),
+            Dense(256, activation="relu"),
+            BatchNormalization(),
+            Dropout(rate=0.5),
+            Dense(512, activation="relu"),
+            BatchNormalization(),
+            Dropout(rate=0.5),
+            Dense(hp.num_classes, activation="softmax"),
+        ]
 
         # Don't change the below:
         self.vgg16 = tf.keras.Sequential(self.vgg16, name="vgg_base")
@@ -149,4 +226,4 @@ class VGGModel(tf.keras.Model):
         #       for tf.keras.losses)
 
         # pass
-        return tf.keras.losses.MAE(labels, predictions)
+        return tf.keras.losses.sparse_categorical_crossentropy(labels, predictions)

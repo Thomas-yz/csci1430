@@ -13,3 +13,5 @@ results/*
 *.aux
 submit/*
 .venv
+checkpoint/
+logs
