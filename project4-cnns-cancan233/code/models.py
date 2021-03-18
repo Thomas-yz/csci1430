@@ -28,10 +28,10 @@ class YourModel(tf.keras.Model):
         # TODO: Select an optimizer for your network (see the documentation
         #       for tf.keras.optimizers)
 
-        # self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
-        self.optimizer = tf.keras.optimizers.SGD(
-            learning_rate=hp.learning_rate, momentum=hp.momentum
-        )
+        self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
+        # self.optimizer = tf.keras.optimizers.SGD(
+        #     learning_rate=hp.learning_rate, momentum=hp.momentum
+        # )
         # TODO: Build your own convolutional neural network, using Dropout at
         #       least once. The input image will be passed through each Keras
         #       layer in self.architecture sequentially. Refer to the imports
@@ -62,74 +62,36 @@ class YourModel(tf.keras.Model):
         #       Note: Flatten is a very useful layer. You shouldn't have to
         #             explicitly reshape any tensors anywhere in your network.
 
-        self.architecture = [
-            Conv2D(filters=64, kernel_size=3, activation="relu"),
-            MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding="valid"),
-            Conv2D(filters=64, kernel_size=3, activation="relu"),
-            MaxPool2D(pool_size=(3, 3), strides=(3, 3), padding="valid"),
-            Flatten(),
-            Dense(128, activation="relu"),
-            Dropout(rate=0.5),
-            Dense(32, activation="relu"),
-            Dropout(rate=0.5),
-            Dense(15, activation="softmax"),
-        ]
-
         # self.architecture = [
-        #     Conv2D(
-        #         filters=64,
-        #         kernel_size=3,
-        #         strides=(1, 1),
-        #         padding="same",
-        #         activation="relu",
-        #     ),
-        #     BatchNormalization(),
-        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
-        #     Conv2D(
-        #         filters=128,
-        #         kernel_size=3,
-        #         strides=(1, 1),
-        #         padding="same",
-        #         activation="relu",
-        #     ),
-        #     BatchNormalization(),
-        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
-        #     Conv2D(
-        #         filters=256,
-        #         kernel_size=3,
-        #         strides=(1, 1),
-        #         padding="same",
-        #         activation="relu",
-        #     ),
-        #     BatchNormalization(),
-        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
-        #     Conv2D(
-        #         filters=256,
-        #         kernel_size=3,
-        #         strides=(1, 1),
-        #         padding="same",
-        #         activation="relu",
-        #     ),
-        #     BatchNormalization(),
-        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
-        #     Conv2D(
-        #         filters=256,
-        #         kernel_size=3,
-        #         strides=(1, 1),
-        #         padding="same",
-        #         activation="relu",
-        #     ),
-        #     BatchNormalization(),
-        #     MaxPool2D(pool_size=(2, 2), strides=None, padding="same"),
+        #     Conv2D(filters=64, kernel_size=9, activation="relu", padding="same"),
+        #     MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="valid"),
+        #     Dropout(rate=0.1),
+        #     Conv2D(filters=64, kernel_size=9, activation="relu", padding="same"),
+        #     MaxPool2D(pool_size=(5, 5), strides=None, padding="valid"),
         #     Flatten(),
-        #     Dense(
-        #         512,
-        #         activation="relu",
-        #     ),
-        #     Dropout(rate=0.5),
+        #     Dense(256, activation="relu"),
         #     BatchNormalization(),
+        #     Dense(512, activation="relu"),
+        #     Dropout(rate=0.4),
         #     Dense(hp.num_classes, activation="softmax"),
         # ]
+
+        self.architecture = [
+            Conv2D(filters=512, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
+            Dropout(rate=0.15),
+            Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
+            Dropout(rate=0.15),
+            Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
+            Flatten(),
+            Dense(256, activation="relu"),
+            BatchNormalization(),
+            Dense(1024, activation="relu"),
+            Dropout(rate=0.4),
+            Dense(hp.num_classes, activation="softmax"),
+        ]
 
         self.architecture = tf.keras.Sequential(self.architecture)
 
@@ -139,7 +101,7 @@ class YourModel(tf.keras.Model):
         # for layer in self.architecture:
         #     x = layer(x)
         x = self.architecture(x)
-        
+
         return x
 
     @staticmethod
@@ -158,7 +120,7 @@ class VGGModel(tf.keras.Model):
         # TODO: Select an optimizer for your network (see the documentation
         #       for tf.keras.optimizers)
 
-        self.optimizer = tf.keras.optimizers.Adam
+        self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
 
         # Don't change the below:
 
@@ -199,10 +161,10 @@ class VGGModel(tf.keras.Model):
             Flatten(),
             Dense(256, activation="relu"),
             BatchNormalization(),
-            Dropout(rate=0.5),
-            Dense(512, activation="relu"),
+            Dropout(rate=0.4),
+            Dense(2048, activation="relu"),
             BatchNormalization(),
-            Dropout(rate=0.5),
+            Dropout(rate=0.4),
             Dense(hp.num_classes, activation="softmax"),
         ]
 
