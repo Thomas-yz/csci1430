@@ -58,6 +58,7 @@ class ImageLabelingLogger(tf.keras.callbacks.Callback):
                 predict_class_idx = np.argmax(probabilities)
 
                 if self.task == '1':
+                    image = image * 0.2535 +  0.4578
                     image = np.clip(image, 0., 1.)
                     plt.imshow(image, cmap='gray')
                 else:
