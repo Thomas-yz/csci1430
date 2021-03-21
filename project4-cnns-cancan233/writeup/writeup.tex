@@ -89,7 +89,7 @@
 
 \section*{Project Overview}
 
-In this project, we have designed our own CNN model for scence recognition task on 15-way scence dataset using the TensorFlow 2.0. A VGG-F pre-trained CNN model is also used for scence recognition on the same dataset, where the CNN was pretrained on ImageNet. The accuracy reported by two models are 75\% and 91\%, respectively, which indicates that a pretrained CNN model on another large dataset performs much better than a model from scratch on the same small scence dataset.
+In this project, we have designed our own CNN model for scence recognition task on 15-way scence dataset using the TensorFlow 2.0. A VGG-F pre-trained CNN model is also used for scence recognition on the same dataset, where the CNN was pretrained on ImageNet. The accuracy reported by two models are 80\% and 91\%, respectively, which indicates that a pretrained CNN model on another large dataset performs much better than a model from scratch on the same small scence dataset.
 
 \section*{Implementation Detail}
 
@@ -100,16 +100,20 @@ self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
 
 self.architecture = [
     Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
-    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
     Dropout(rate=0.15),
     Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
     MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
     Dropout(rate=0.15),
     Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
-    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
     Dropout(rate=0.15),
     Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
     MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+
+    Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
+    Dropout(rate=0.15),
+    Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
+    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+
     Dropout(rate=0.15),
     GlobalAveragePooling2D(),
     Dense(256, activation="relu"),
@@ -172,12 +176,12 @@ loss = tf.keras.losses.sparse_categorical_crossentropy(labels, predictions)
 
 The model summary are presented in Fig. \ref{fig:your_model_summary} and Fig. \ref{fig:vgg_summary}. The graphs of loss function over time during training are presented in Fig. \ref{fig:your_model_results} and Fig. \ref{fig:vgg_results}.
 
-After implementing the model structures described above and hyperparameters optimization, the best achieved performance of \emph{your\_model} is 75\% and VGG is 91\%. The classification performance for each step of two models are plotted in Fig. \ref{fig:your_model_results} and Fig. \ref{fig:vgg_results}.
+After implementing the model structures described above and hyperparameters optimization, the best achieved performance of \emph{your\_model} is 80\% and VGG is 91\%. The classification performance for each step of two models are plotted in Fig. \ref{fig:your_model_results} and Fig. \ref{fig:vgg_results}.
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[scale=0.8]{your_model.png}
-    \caption{screenshot of your\_model summary}
+    \includegraphics[scale=0.7]{your_model.png}
+    \caption{screenshot of \emph{your\_model} summary}
     \label{fig:your_model_summary}
 \end{figure}
 

@@ -65,16 +65,20 @@ class YourModel(tf.keras.Model):
 
         self.architecture = [
             Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
-            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
             Dropout(rate=0.15),
             Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
             MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
             Dropout(rate=0.15),
             Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
-            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
             Dropout(rate=0.15),
             Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
             MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+
+            Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
+            Dropout(rate=0.15),
+            Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+
             Dropout(rate=0.15),
             GlobalAveragePooling2D(),
             Dense(256, activation="relu"),
