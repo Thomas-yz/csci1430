@@ -89,7 +89,7 @@
 
 \section*{Project Overview}
 
-In this project, we have designed our own CNN model for scence recognition task on 15-way scence dataset using the TensorFlow 2.0. A VGG-F pre-trained CNN model is also used for scence recognition on the same dataset, where the CNN was pretrained on ImageNet. The accuracy reported by two models are 74\% and 90\%, respectively, which indicates that a pretrained CNN model on another large dataset performs much better than a model from scratch on the same small scence dataset.
+In this project, we have designed our own CNN model for scence recognition task on 15-way scence dataset using the TensorFlow 2.0. A VGG-F pre-trained CNN model is also used for scence recognition on the same dataset, where the CNN was pretrained on ImageNet. The accuracy reported by two models are 75\% and 91\%, respectively, which indicates that a pretrained CNN model on another large dataset performs much better than a model from scratch on the same small scence dataset.
 
 \section*{Implementation Detail}
 
@@ -99,19 +99,22 @@ In this project, we have designed our own CNN model for scence recognition task 
 self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
 
 self.architecture = [
-    Conv2D(filters=512, kernel_size=5, activation="relu", padding="same"),
-    MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
-    Dropout(rate=0.15),
-    Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
-    MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
+    Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
+    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
     Dropout(rate=0.15),
     Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
-    MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
-    Flatten(),
+    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+    Dropout(rate=0.15),
+    Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
+    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+    Dropout(rate=0.15),
+    Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
+    MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+    Dropout(rate=0.15),
+    GlobalAveragePooling2D(),
     Dense(256, activation="relu"),
     BatchNormalization(),
-    Dense(1024, activation="relu"),
-    Dropout(rate=0.4),
+    Dropout(rate=0.5),
     Dense(hp.num_classes, activation="softmax"),
 ]
 
@@ -155,24 +158,21 @@ Local Interpretable Model-agnostic Explanation (LIME) can explain how the input 
 self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
 
 self.head = [
-    Flatten(),
-    Dense(256, activation="relu"),
-    BatchNormalization(),
-    Dropout(rate=0.4),
-    Dense(2048, activation="relu"),
-    BatchNormalization(),
-    Dropout(rate=0.4),
+    Conv2D(256, 1, 1, padding='same', activation='relu'),
+    GlobalAveragePooling2D(),
+    Dropout(rate=0.5),
     Dense(hp.num_classes, activation="softmax"),
-]
+  ]
+  
 ### loss definition
 loss = tf.keras.losses.sparse_categorical_crossentropy(labels, predictions)
     \end{python}
 
 \section*{Result}
 
-The model summary are presented in Fig. \ref{fig:your_model_summary} and Fig. \ref{fig:vgg_summary}. The graphs of loss function over time during training are presented in Fig. \ref{fig:your_model_loss} and Fig. \ref{fig:vgg_loss}. 
+The model summary are presented in Fig. \ref{fig:your_model_summary} and Fig. \ref{fig:vgg_summary}. The graphs of loss function over time during training are presented in Fig. \ref{fig:your_model_results} and Fig. \ref{fig:vgg_results}.
 
-After implementing the model structures described above and hyperparameters optimization, the best achieved performance of \emph{your\_model} is 73.67\% and VGG is 90.39\%. The classification performance for each step of two models are plotted in Fig. \ref{fig:your_model_results} and Fig. \ref{fig:vgg_results}.
+After implementing the model structures described above and hyperparameters optimization, the best achieved performance of \emph{your\_model} is 75\% and VGG is 91\%. The classification performance for each step of two models are plotted in Fig. \ref{fig:your_model_results} and Fig. \ref{fig:vgg_results}.
 
 \begin{figure}[htbp]
     \centering
@@ -183,13 +183,28 @@ After implementing the model structures described above and hyperparameters opti
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[scale=0.7]{vgg_1.png}
-    \includegraphics[scale=0.7]{vgg_2.png}
+    \includegraphics[scale=0.65]{vgg_1.png}
+    \includegraphics[scale=0.65]{vgg_2.png}
     \caption{screenshot of VGG model summary}
     \label{fig:vgg_summary}
 \end{figure}
 
+\begin{figure}
+    \centering
+    \includegraphics[]{your_model_batch_acc.png}
+    \includegraphics[]{your_model_epoch_loss.png}
+    \caption{\emph{Above}:classification performance for each step in your\_model. \emph{Below}: your\_model loss function over time during training}\
+    \label{fig:your_model_results}
+\end{figure}
 
+
+\begin{figure}
+    \centering
+    \includegraphics[]{vgg_batch_acc.png}
+    \includegraphics[]{vgg_epoch_loss.png}
+    \caption{\emph{Above}:classification performance for each step in VGG. \emph{Below}: VGG loss function over time during training}
+    \label{fig:vgg_results}
+\end{figure}
 
 
 % \section*{Extra Credit (Optional)}

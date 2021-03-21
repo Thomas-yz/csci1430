@@ -14,6 +14,7 @@ from tensorflow.keras.layers import (
     Flatten,
     Dense,
     BatchNormalization,
+    GlobalAveragePooling2D,
 )
 
 import hyperparameters as hp
@@ -62,34 +63,23 @@ class YourModel(tf.keras.Model):
         #       Note: Flatten is a very useful layer. You shouldn't have to
         #             explicitly reshape any tensors anywhere in your network.
 
-        # self.architecture = [
-        #     Conv2D(filters=64, kernel_size=9, activation="relu", padding="same"),
-        #     MaxPool2D(pool_size=(3, 3), strides=(2, 2), padding="valid"),
-        #     Dropout(rate=0.1),
-        #     Conv2D(filters=64, kernel_size=9, activation="relu", padding="same"),
-        #     MaxPool2D(pool_size=(5, 5), strides=None, padding="valid"),
-        #     Flatten(),
-        #     Dense(256, activation="relu"),
-        #     BatchNormalization(),
-        #     Dense(512, activation="relu"),
-        #     Dropout(rate=0.4),
-        #     Dense(hp.num_classes, activation="softmax"),
-        # ]
-
         self.architecture = [
-            Conv2D(filters=512, kernel_size=5, activation="relu", padding="same"),
-            MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
-            Dropout(rate=0.15),
-            Conv2D(filters=256, kernel_size=5, activation="relu", padding="same"),
-            MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
+            Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
             Dropout(rate=0.15),
             Conv2D(filters=64, kernel_size=5, activation="relu", padding="same"),
-            MaxPool2D(pool_size=(3, 3), strides=None, padding="valid"),
-            Flatten(),
+            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+            Dropout(rate=0.15),
+            Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+            Dropout(rate=0.15),
+            Conv2D(filters=128, kernel_size=5, activation="relu", padding="same"),
+            MaxPool2D(pool_size=(3, 3), strides=2, padding="valid"),
+            Dropout(rate=0.15),
+            GlobalAveragePooling2D(),
             Dense(256, activation="relu"),
             BatchNormalization(),
-            Dense(1024, activation="relu"),
-            Dropout(rate=0.4),
+            Dropout(rate=0.5),
             Dense(hp.num_classes, activation="softmax"),
         ]
 
@@ -158,16 +148,12 @@ class VGGModel(tf.keras.Model):
         # TODO: Write a classification head for our 15-scene classification task.
 
         self.head = [
-            Flatten(),
-            Dense(256, activation="relu"),
-            BatchNormalization(),
-            Dropout(rate=0.4),
-            Dense(2048, activation="relu"),
-            BatchNormalization(),
-            Dropout(rate=0.4),
-            Dense(hp.num_classes, activation="softmax"),
+          Conv2D(256, 1, 1, padding='same', activation='relu'),
+          GlobalAveragePooling2D(),
+        #   BatchNormalization(),
+          Dropout(rate=0.5),
+          Dense(hp.num_classes, activation="softmax"),
         ]
-
         # Don't change the below:
         self.vgg16 = tf.keras.Sequential(self.vgg16, name="vgg_base")
         self.head = tf.keras.Sequential(self.head, name="vgg_head")
