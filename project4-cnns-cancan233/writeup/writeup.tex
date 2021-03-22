@@ -94,7 +94,7 @@ In this project, we have designed our own CNN model for scence recognition task 
 \section*{Implementation Detail}
 
 \subsection*{Task 1}
-\emph{your\_model}: below is the \textit{your\_model} code snippets. We adopted three convolutional layers, each layer followed by maxpooling layer to shrinking the data size and dropout layer to avoid overfitting. And the output data is then flattened and fed into two fully-connected layers, one followed by BatchNormalization and one followed by dropout. The final layer contains neurons with the number being the number of classes. The activation functions for each layer are relu except for the final layer, which is softmax to calculate the prediction probability.
+\emph{your\_model}: below is the \textit{your\_model} code snippets. The final CNN structures contains 6 Conv2D layers with number of filters increase from 64 to 256. Every Conv2D layer is followed by one Dropout layer to avoid overfitting, and after every two Conv2D layers, one MaxPool2D layer is added. The final Conv2D layer is followed by a GlobalAveragePooling2D layer. This layer will average values each channel and thus no flatten layer is needed. Then one Dense layer and one BatchNotmalization layer is added before the final prediction Dense layer. The activation functions for each layer are relu except for the final layer, which is softmax to calculate the prediction probability.
           \begin{python}
 self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
 
@@ -157,7 +157,7 @@ Local Interpretable Model-agnostic Explanation (LIME) can explain how the input 
 
 \subsection*{Task 3}
 
-\emph{Vgg\_head}: To make the model be able to classify scences, we first need to flatten the CNN layers, which is followed by two fully-connected layers with BatchNormalization and Dropout layer respectively to avoid overfitting. The final layer is a fully-connected layer with neuron number as the number of classes. The activation functions for each layer are relu except for the final layer, which is softmax to calculate the prediction probability.
+\emph{Vgg\_head}: After the VGG model, we first add one Conv2D layer with 1*1 filter to correlate values among channels. Then a GlobalAveragePooling2D layer is added and then one Dropout layer. After this, a Dense layer is added for the prediction. The activation functions for each layer are relu except for the final layer, which is softmax to calculate the prediction probability.
     \begin{python}
 self.optimizer = tf.keras.optimizers.Adam(hp.learning_rate)
 
