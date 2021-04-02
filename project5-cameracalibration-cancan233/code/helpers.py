@@ -4,6 +4,7 @@ from skimage import img_as_float32
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import random
+import os
 
 
 def get_markers(markers_path):
@@ -23,9 +24,21 @@ def get_markers(markers_path):
                 info = [float(x) for x in line.split()]
                 markers[i] = [
                     [info[0], info[1], info[2]],
-                    [info[0] + first_dim * info[3], info[1] + first_dim * info[4], info[2] + first_dim * info[5]],
-                    [info[0] + first_dim * info[3] + second_dim * info[6], info[1] + first_dim * info[4] + second_dim * info[7], info[2] + first_dim * info[5] + second_dim * info[8]],
-                    [info[0] + second_dim * info[6], info[1] + second_dim * info[7], info[2] + second_dim * info[8]],
+                    [
+                        info[0] + first_dim * info[3],
+                        info[1] + first_dim * info[4],
+                        info[2] + first_dim * info[5],
+                    ],
+                    [
+                        info[0] + first_dim * info[3] + second_dim * info[6],
+                        info[1] + first_dim * info[4] + second_dim * info[7],
+                        info[2] + first_dim * info[5] + second_dim * info[8],
+                    ],
+                    [
+                        info[0] + second_dim * info[6],
+                        info[1] + second_dim * info[7],
+                        info[2] + second_dim * info[8],
+                    ],
                 ]
     return markers
 
@@ -55,9 +68,9 @@ def get_matches(image1, image2, num_keypoints=5000):
     matches_kp2 = np.asarray(list_kp2)
 
     # Remove duplicate matches
-    combine_reduce = np.unique(np.concatenate((matches_kp1, matches_kp2),
-                                             axis=1),
-                              axis=0)
+    combine_reduce = np.unique(
+        np.concatenate((matches_kp1, matches_kp2), axis=1), axis=0
+    )
     points1 = combine_reduce[:, 0:2]
     points2 = combine_reduce[:, -2:]
 
@@ -73,7 +86,7 @@ def show_matches(image1, image2, points1, points2):
     image2 = img_as_float32(image2)
 
     fig = plt.figure()
-    plt.axis('off')
+    plt.axis("off")
 
     matches_image = np.hstack([image1, image2])
     plt.imshow(matches_image)
@@ -82,7 +95,7 @@ def show_matches(image1, image2, points1, points2):
     for i in range(0, points1.shape[0]):
 
         random_color = lambda: random.randint(0, 255)
-        cur_color = ('#%02X%02X%02X' % (random_color(), random_color(), random_color()))
+        cur_color = "#%02X%02X%02X" % (random_color(), random_color(), random_color())
 
         x1 = points1[i, 1]
         y1 = points1[i, 0]
@@ -102,8 +115,7 @@ def reproject_points(M, points):
     array of image points
     """
 
-    reshaped_points = np.concatenate(
-        (points, np.ones((points.shape[0], 1))), axis=1)
+    reshaped_points = np.concatenate((points, np.ones((points.shape[0], 1))), axis=1)
     projected_points = np.matmul(M, np.transpose(reshaped_points))
     projected_points = np.transpose(projected_points)
     u = np.divide(projected_points[:, 0], projected_points[:, 2])
@@ -124,7 +136,7 @@ def show_reprojections(images, Ms, markers):
     points3d = np.array(points3d)
 
     fig, axs = plt.subplots(1, len(images), figsize=(15, 6))
-    plt.axis('off')
+    plt.axis("off")
 
     for i in range(len(images)):
         points2d = reproject_points(Ms[i], points3d)
@@ -137,18 +149,19 @@ def show_point_cloud(points3d, colors):
     """
     Show 3D points with their corresponding colors
     """
-    fig = go.Figure(data=[go.Scatter3d(
-        x=points3d[:, 0],
-        y=points3d[:, 1],
-        z=points3d[:, 2],
-        mode='markers',
-        marker=dict(
-            size=2,
-            color=colors,
-            opacity=1
-        )
-    )])
+    fig = go.Figure(
+        data=[
+            go.Scatter3d(
+                x=points3d[:, 0],
+                y=points3d[:, 1],
+                z=points3d[:, 2],
+                mode="markers",
+                marker=dict(size=2, color=colors, opacity=1),
+            )
+        ]
+    )
 
     # tight layout
     fig.update_layout(margin=dict(l=0, r=0, b=0, t=0))
     fig.show()
+    # fig.write_image("./images/fig1.png")

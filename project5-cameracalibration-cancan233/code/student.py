@@ -1,6 +1,11 @@
+from math import factorial
+from re import match
 import numpy as np
 import cv2
-from random import sample
+
+from random import random, sample
+
+from numpy.core.defchararray import index
 
 
 def calculate_projection_matrix(image, markers):
@@ -28,7 +33,8 @@ def calculate_projection_matrix(image, markers):
     parameters = cv2.aruco.DetectorParameters_create()
 
     markerCorners, markerIds, rejectedCandidates = cv2.aruco.detectMarkers(
-        image, dictionary, parameters=parameters)
+        image, dictionary, parameters=parameters
+    )
     markerIds = [m[0] for m in markerIds]
     markerCorners = [m[0] for m in markerCorners]
 
@@ -48,12 +54,48 @@ def calculate_projection_matrix(image, markers):
     # TODO: Your code here #
     ########################
     # This M matrix came from a call to rand(3,4). It leads to a high residual.
-    print('Randomly setting matrix entries as a placeholder')
-    M = np.array([[0.1768, 0.7018, 0.7948, 0.4613],
-                  [0.6750, 0.3152, 0.1136, 0.0480],
-                  [0.1020, 0.1725, 0.7244, 0.9932]])
+    # print('Randomly setting matrix entries as a placeholder')
 
-    return M
+    b = np.reshape(points2d, (-1,))
+
+    A = []
+    for i in range(len(points3d)):
+        A.append(
+            [
+                points3d[i][0],
+                points3d[i][1],
+                points3d[i][2],
+                1,
+                0,
+                0,
+                0,
+                0,
+                -points3d[i][0] * points2d[i][0],
+                -points3d[i][1] * points2d[i][0],
+                -points3d[i][2] * points2d[i][0],
+            ]
+        )
+        A.append(
+            [
+                0,
+                0,
+                0,
+                0,
+                points3d[i][0],
+                points3d[i][1],
+                points3d[i][2],
+                1,
+                -points3d[i][0] * points2d[i][1],
+                -points3d[i][1] * points2d[i][1],
+                -points3d[i][2] * points2d[i][1],
+            ]
+        )
+
+    M = np.zeros(12)
+    M[:11] = np.linalg.lstsq(A, b, rcond=None)[0]
+    M[11] = 1
+
+    return np.reshape(M, (3, 4))
 
 
 def normalize_coordinates(points):
@@ -82,9 +124,16 @@ def normalize_coordinates(points):
     ########################
     # This is a placeholder with the identity matrix for T replace with the
     # real transformation matrix for this set of points
-    T = np.eye(3)
-
-    return points, T
+    T_scale = np.eye(3)
+    T_offset = np.eye(3)
+    mean = np.mean(points, axis=0)
+    std = 1 / np.std(points[:, :2], axis=0)
+    T_scale[0][0], T_scale[1][1] = std[0], std[1]
+    T_offset[0][2], T_offset[1][2] = -mean[0], -mean[1]
+    T_f = np.matmul(T_scale, T_offset)
+    points = T_f @ points.T
+    points = points.T
+    return points, T_f
 
 
 def estimate_fundamental_matrix(points1, points2):
@@ -108,10 +157,28 @@ def estimate_fundamental_matrix(points1, points2):
     # TODO: Your code here #
     ########################
 
-    # This is an intentionally incorrect Fundamental matrix placeholder
-    F_matrix = np.array([[0, 0, -.0004], [0, 0, .0032], [0, -0.0044, .1034]])
+    n = points1.shape[0]
 
-    return F_matrix
+    x = np.concatenate((points1, np.ones(n).reshape(-1, 1)), axis=1)
+    x_prime = np.concatenate((points2, np.ones(n).reshape(-1, 1)), axis=1)
+
+    x, T_a = normalize_coordinates(x)
+    x_prime, T_b = normalize_coordinates(x_prime)
+
+    x_u = np.multiply(x, x_prime[:, 0].reshape(-1, 1))
+    x_v = np.multiply(x, x_prime[:, 1].reshape(-1, 1))
+    A = np.concatenate((x_u, x_v, x), axis=1)
+
+    U, S, Vh = np.linalg.svd(A)
+    F = Vh[-1].reshape((3, 3))
+
+    U, S, Vh = np.linalg.svd(F)
+    S[-1] = 0
+    F = U @ np.diagflat(S) @ Vh
+    F = T_b.T @ F @ T_a
+    F /= F[-1][-1]
+
+    return F
 
 
 def ransac_fundamental_matrix(matches1, matches2, num_iters):
@@ -143,9 +210,44 @@ def ransac_fundamental_matrix(matches1, matches2, num_iters):
     # Your RANSAC loop should contain a call to 'estimate_fundamental_matrix()'
     # that you wrote for part II.
 
-    best_Fmatrix = estimate_fundamental_matrix(matches1[0:9, :], matches2[0:9, :])
-    inliers_a = matches1[0:29, :]
-    inliers_b = matches2[0:29, :]
+    PassThreshold = 1e-2
+    num_sample = 8
+    n = matches1.shape[0]
+    best_inlier_count = 0
+
+    for i in range(0, num_iters):
+        RandIdx = np.random.randint(n, size=num_sample)
+
+        estimate_Fmatrix = estimate_fundamental_matrix(
+            matches1[RandIdx, :], matches2[RandIdx, :]
+        )
+        # estimate_Fmatrix, _ = cv2.findFundamentalMat(
+        #     matches1[RandIdx], matches2[RandIdx], cv2.FM_8POINT, 1e10, 0, 1
+        # )
+
+        inlier_count = 0
+        curr_inliers1 = []
+        curr_inliers2 = []
+
+        for j in range(n):
+            new_matches1 = np.append(matches1[j, :], 1)
+            new_matches2 = np.append(matches2[j, :], 1)
+            error = np.matmul(new_matches2.T, estimate_Fmatrix)
+            error = np.matmul(error, new_matches1)
+
+            if abs(error) < PassThreshold:
+                curr_inliers1.append([matches1[j, 0], matches1[j, 1]])
+                curr_inliers2.append([matches2[j, 0], matches2[j, 1]])
+                inlier_count += 1
+
+        if inlier_count > best_inlier_count:
+            best_Fmatrix = estimate_Fmatrix
+            best_inlier_count = inlier_count
+            inliers_a = curr_inliers1
+            inliers_b = curr_inliers2
+
+    inliers_a = np.asarray(inliers_a)
+    inliers_b = np.asarray(inliers_b)
 
     return best_Fmatrix, inliers_a, inliers_b
 
@@ -170,4 +272,42 @@ def matches_to_3d(points1, points2, M1, M2):
     # TODO: Your code here #
     ########################
 
+    points3d = []
+    for i in range(points1.shape[0]):
+        A = []
+        A.append(
+            [
+                (M1[0][0] - M1[2][0] * points1[i][0]),
+                (M1[0][1] - M1[2][1] * points1[i][0]),
+                (M1[0][2] - M1[2][2] * points1[i][0]),
+            ]
+        )
+        A.append(
+            [
+                (M1[1][0] - M1[2][0] * points1[i][1]),
+                (M1[1][1] - M1[2][1] * points1[i][1]),
+                (M1[1][2] - M1[2][2] * points1[i][1]),
+            ]
+        )
+        A.append(
+            [
+                (M2[0][0] - M2[2][0] * points2[i][0]),
+                (M2[0][1] - M2[2][1] * points2[i][0]),
+                (M2[0][2] - M2[2][2] * points2[i][0]),
+            ]
+        )
+        A.append(
+            [
+                (M2[1][0] - M2[2][0] * points2[i][1]),
+                (M2[1][1] - M2[2][1] * points2[i][1]),
+                (M2[1][2] - M2[2][2] * points2[i][1]),
+            ]
+        )
+        b = [
+            M1[2][3] * points1[i][0] - M1[0][3],
+            M1[2][3] * points1[i][1] - M1[1][3],
+            M2[2][3] * points2[i][0] - M2[0][3],
+            M2[2][3] * points2[i][1] - M2[1][3],
+        ]
+        points3d.append(np.linalg.lstsq(A, b, rcond=None)[0])
     return points3d

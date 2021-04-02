@@ -97,11 +97,11 @@ should be on this page
 
 \section*{Instructions}
 \begin{itemize}
-  \item 6 questions.
-  \item Write code where appropriate; feel free to include images or equations.
-  \item Please make this document anonymous.
-  \item This assignment is \textbf{fixed length}, and the pages have been assigned for you in Gradescope. As a result, \textbf{please do NOT add any new pages}. We will provide ample room for you to answer the questions. If you \emph{really} wish for more space, please add a page \emph{at the end of the document}.
-  \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
+    \item 6 questions.
+    \item Write code where appropriate; feel free to include images or equations.
+    \item Please make this document anonymous.
+    \item This assignment is \textbf{fixed length}, and the pages have been assigned for you in Gradescope. As a result, \textbf{please do NOT add any new pages}. We will provide ample room for you to answer the questions. If you \emph{really} wish for more space, please add a page \emph{at the end of the document}.
+    \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
 \end{itemize}
 
 \section*{Questions}
@@ -110,129 +110,160 @@ should be on this page
 
 \paragraph{Q1:} Given a stereo pair of cameras:
 \begin{enumerate} [(a)]
-\item Briefly describe triangulation (using images might be helpful).
-\item Why is it not possible to find an absolute depth for each point when we don't have calibration information for our cameras?
+    \item Briefly describe triangulation (using images might be helpful).
+    \item Why is it not possible to find an absolute depth for each point when we don't have calibration information for our cameras?
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A1:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+    \item Triangulation refers to the process of determining a point in 3D space given its projections onto two, or more, images. In an image, each point corresponds to a line in 3D space, which means all points on the line in 3D space are projected to the point in the image. If a pair of corresponding points are found in images taken by the stereo pair of cameras, they must be projected by a common 3D point \textbf{x}. (See left part of Fig. \ref{fig:triangulation}) In practice, however, the coordinates of image points cannot be measured with arbitrary accuracy. Various types of noise can lead to inaccuracies in the measured image coordinates, which results in that the lines do not always intersect in 3D space. (See right part of Fig. \ref{fig:triangulation}) This problem is solved in triangulation.
 
-% \item 
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          % Please leave the pagebreak
+          \pagebreak
+          \paragraph{A1 (continued):} Your answer here.
+    \item In camera calibration, it is demtermined that the parameters of the transformation between an object in 3D space and the 2D image observed by the camera from visual information, which includes extrinsic parameters, orientation and location of the camera, and intrinsic parameters, characteristics of the cameras.(\href{https://www.cs.rutgers.edu/~elgammal/classes/cs534/lectures/CameraCalibration-book-chapter.pdf}{Camera Calibration}) To estimate the absolute depth of each point, the information on camera pose and image point correspondences are needed, which cannot get without calibration information.
 
-% \end{enumerate}
+          \begin{figure}[htbp]
+              \centering
+              \includegraphics[width=0.49\linewidth]{triangulationideal.png}
+              \includegraphics[width=0.49\linewidth]{TriangulationReal.png}
+              \caption{\emph{Left}: the ideal case of epipolar geometry. \emph{Right}: the real case that points cannot be measured with arbitrary accuracy. (Source: \href{https://en.wikipedia.org/wiki/Triangulation_(computer_vision)}{Wikipedia: Triangulation})}
+              \label{fig:triangulation}
+          \end{figure}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Please leave the pagebreak
-\pagebreak
-\paragraph{A1 (continued):} Your answer here.
-
-
+\end{enumerate}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Please leave the pagebreak
 \pagebreak
 \paragraph{Q2:} In two-view camera geometry and depth estimation:
 \begin{enumerate} [(a)]
-\item Why does rectification simplify matching features across our stereo image pair?
-\item What information do we need to know to rectify our image pair?
+    \item Why does rectification simplify matching features across our stereo image pair?
+    \item What information do we need to know to rectify our image pair?
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A2:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+    \item Image rectification is a transformation process used to project images onto a common image plane. It will warp both images such that they appear as if they have been taken with only a horizontal displacement and as a consequence all epipolar lines are horizontal, which slightly simplifies the stereo matching process.
 
-% \item 
-
-% \end{enumerate}
+    \item To rectify image pair, we need to know the fundamental matrix $F$ to construct two $3\times 3$ homograhies $H$ and $H'$. (Source: \href{http://dev.ipol.im/~morel/Dossier_MVA_2011_Cours_Transparents_Documents/2011_Cours7_Document2_Loop-Zhang-CVPR1999.pdf}{Computing Rectifying Homographies for Stereo Vision}). $H$ and $H'$ can be constructed in such way that
+          \[F = H'^T[i]_xH\]
+          where
+          \[[i]_x = \begin{pmatrix}
+                  0 & 0 & 0  \\
+                  0 & 0 & -1 \\
+                  0 & 1 & 0  \\
+              \end{pmatrix}\]
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Please leave the pagebreak
 \pagebreak
-\paragraph{Q3:} In two-view camera geometry, what does it mean when the epipolar lines: 
+\paragraph{Q3:} In two-view camera geometry, what does it mean when the epipolar lines:
 \begin{enumerate}[(a)]
-\item radiate out of a point on the image plane,
-\item converge to a point outside of the image plane, and
-\item intersect at more than one point?
+    \item radiate out of a point on the image plane,
+    \item converge to a point outside of the image plane, and
+    \item intersect at more than one point?
 \end{enumerate}
 
 We highly recommend using this \href{https://browncsci1430.github.io/webpage/demos/stereo_camera_visualization/index.html}{interactive demo} to explore the different scenarios and get a better feel for epipolar geometry.
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A3:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+The epipolar line is the straight line of intersection of the epipolar plane with the image plane.  All epipolar lines intersect at the epipole. And the epipole is the image, in one camera, of the optical centre of the other camera.
 
-% \item 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{Q3.png}
+    \caption{The general setup of epipolar geometry.}
+\end{figure}
 
-% \item 
+\begin{enumerate}[(a)]
 
-% \item
+    \item If all epipolar lines radiate out of a point on the image plane, this point is the epipole. It means the optical centre of the other camera is within the image. Thus, it is forward motion.
 
-% \end{enumerate}
+    \item If the epipolar lines converge to a point outside the image plane, it means that the epipolar lines will intersect at indifite point, i.e. the epipolar lines are parallel in the image plane. Thus, it is parrallel motion.
+
+          \begin{figure}[htbp]
+              \centering
+              \includegraphics[width=0.6\linewidth]{Q3_A2.png}
+          \end{figure}
+
+    \item Having more than one intersection points means that there are more than one epipoles, which also means that there are more than two camera centers. It can imply that there are more than two cameras used, or this is the result of some error during calculation or calibration.
+
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \paragraph{Q4:}
 Suppose that we have the following three datasets of an object of unknown geometry:
 \begin{enumerate}[(a)]
-\item A video circling the object;
-\item An stereo pair of calibrated cameras capturing two images of the object; and
-\item Two images we take of the object at two different camera poses (position and orientation) using the same camera but with different lens zoom settings.
+    \item A video circling the object;
+    \item An stereo pair of calibrated cameras capturing two images of the object; and
+    \item Two images we take of the object at two different camera poses (position and orientation) using the same camera but with different lens zoom settings.
 \end{enumerate}
 
 \begin{enumerate}
-\item For each of the above setups, decide if we can calculate the essential matrix, the fundamental matrix, or both. \\ 
-\emph{LaTeX:} To fill in boxes, replace `\textbackslash square' with `\textbackslash blacksquare' for your answer. \\ \\
-(a)
-\begin{tabular}[h]{lc}
-\toprule
-Essential Matrix & $\square$ \\
-Fundamental Matrix & $\square$ \\
-Both & $\square$ \\
-\end{tabular} \\
-(b)
-\begin{tabular}[h]{lc}
-\toprule
-Essential Matrix & $\square$ \\
-Fundamental Matrix & $\square$ \\
-Both & $\square$ \\
-\end{tabular} \\
-(c)
-\begin{tabular}[h]{lc}
-\toprule
-Essential Matrix & $\square$ \\
-Fundamental Matrix & $\square$ \\
-Both & $\square$ \\
-\bottomrule
-\end{tabular}
-\item State an advantage and disadvantage of using each setup for depth reconstruction; and
-\item Name an application scenario for each of the different setups.
+    \item For each of the above setups, decide if we can calculate the essential matrix, the fundamental matrix, or both. \\
+          \emph{LaTeX:} To fill in boxes, replace `\textbackslash square' with `\textbackslash blacksquare' for your answer. \\ \\
+          (a)
+          \begin{tabular}[h]{lc}
+              \toprule
+              Essential Matrix   & $\square$      \\
+              Fundamental Matrix & $\blacksquare$ \\
+              Both               & $\square$      \\
+          \end{tabular} \\
+          (b)
+          \begin{tabular}[h]{lc}
+              \toprule
+              Essential Matrix   & $\square$      \\
+              Fundamental Matrix & $\square$      \\
+              Both               & $\blacksquare$ \\
+          \end{tabular} \\
+          (c)
+          \begin{tabular}[h]{lc}
+              \toprule
+              Essential Matrix   & $\square$      \\
+              Fundamental Matrix & $\blacksquare$ \\
+              Both               & $\square$      \\
+              \bottomrule
+          \end{tabular}
+    \item State an advantage and disadvantage of using each setup for depth reconstruction; and
+    \item Name an application scenario for each of the different setups.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \paragraph{A4:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[]
 
-% \item 
+    \item See above.
 
-% \item 
+    \item \begin{enumerate}[(a)]
+              \item \textbf{Advantage}: relatively easy to implement and can result in relatively good result as fundamental matrices can be estimated. \textbf{Disadvantage}: not work for objects of really big size, such as a mountain.
+              \item \textbf{Advantage}:depth reconstruction is more accurate as intrinsic matrix is known. \textbf{Disadvantage}: difficult to setup as stereo cameras are less common.
+              \item \textbf{Advantage}:easy to setup as only one camera is needed. \textbf{Disadvantage}: less accurate as camera is not calibrated and focal length is changed.
+          \end{enumerate}
 
-% \item
+    \item \begin{enumerate}[(a)]
+              \item This can be used for creating panoramic photos and generate a 3D model of the scanned object.
+              \item shooting 3D films with stereo cameras.
+              \item can take photos for large objects such as a mountain.
+          \end{enumerate}
 
-% \end{enumerate}
+\end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Please leave the pagebreak
@@ -248,46 +279,46 @@ Suppose we have a quadrilateral $ABCD$ and a transformed version $A'B'C'D'$ as s
 \includegraphics[width=8cm]{quadrilaterals.jpg}
 
 \begin{equation}
-\begin{split}
-A&=(1, 1)\\
-B&=(1.5, 0.5)\\
-C&=(2, 1)\\
-D&=(2.5, 2)
-\end{split}
-\quad\quad\quad
-\begin{split}
-A'&=(-0.3, 1.3)\\
-B'&=(0.5, 1.1)\\
-C'&=(-0.3, 1.8)\\
-D'&=(-0.3, 2.6)
-\end{split}
+    \begin{split}
+        A&=(1, 1)\\
+        B&=(1.5, 0.5)\\
+        C&=(2, 1)\\
+        D&=(2.5, 2)
+    \end{split}
+    \quad\quad\quad
+    \begin{split}
+        A'&=(-0.3, 1.3)\\
+        B'&=(0.5, 1.1)\\
+        C'&=(-0.3, 1.8)\\
+        D'&=(-0.3, 2.6)
+    \end{split}
 \end{equation}
 
 Let's assume that each point in $ABCD$ was approximately mapped to its corresponding point in $A'B'C'D'$ by a $2\times2$ transformation matrix $M$.
 
-e.g. if $A = \begin{pmatrix} x \\ y \end{pmatrix}$ and $A' = \begin{pmatrix} x' \\ y' \end{pmatrix}$, and $\boldsymbol{M} = \begin{pmatrix} m_{1,1} & m_{1,2} \\ m_{2,1} & m_{2,2} \end{pmatrix}$ 
+e.g. if $A = \begin{pmatrix} x \\ y \end{pmatrix}$ and $A' = \begin{pmatrix} x' \\ y' \end{pmatrix}$, and $\boldsymbol{M} = \begin{pmatrix} m_{1,1} & m_{1,2} \\ m_{2,1} & m_{2,2} \end{pmatrix}$
 
 then $\begin{pmatrix} m_{1,1} & m_{1,2} \\ m_{2,1} & m_{2,2} \end{pmatrix} * \begin{pmatrix} x \\ y \end{pmatrix} \approx \begin{pmatrix} x' \\ y' \end{pmatrix}$
 
 We would like to approximate $\boldsymbol{M}$ using least squares for linear regression.
 
 \begin{enumerate}[(a)]
-\item Rewrite the equation $\boldsymbol{M}x \approx x'$ into a pair of linear equations. We have provided you with a template of what they should look like below.
+    \item Rewrite the equation $\boldsymbol{M}x \approx x'$ into a pair of linear equations. We have provided you with a template of what they should look like below.
 
-\item Use the equations you wrote for part (a) and coordinate values for $ABCD$ and $A'B'C'D'$ to construct a matrix $\boldsymbol{Q}$ and column vector $b$ that satisfy
-\begin{align}
-    \boldsymbol{Q}*\begin{pmatrix} m_{1,1} \\ m_{1,2} \\ m_{2,1} \\ m_{2,2} \\ \end{pmatrix} = b
-\end{align}
+    \item Use the equations you wrote for part (a) and coordinate values for $ABCD$ and $A'B'C'D'$ to construct a matrix $\boldsymbol{Q}$ and column vector $b$ that satisfy
+          \begin{align}
+              \boldsymbol{Q}*\begin{pmatrix} m_{1,1} \\ m_{1,2} \\ m_{2,1} \\ m_{2,2} \\ \end{pmatrix} = b
+          \end{align}
 
-We have provided you with a template of what they should look like below.
+          We have provided you with a template of what they should look like below.
 
-\emph{Hint:} you have a pair of equations for each $x$-$x'$ correspondence, giving you $8$ rows in $\boldsymbol{Q}$ and $b$.
+          \emph{Hint:} you have a pair of equations for each $x$-$x'$ correspondence, giving you $8$ rows in $\boldsymbol{Q}$ and $b$.
 
-\emph{Note:} Systems of linear equations are typically written in the form $\boldsymbol{A}x=b$, but since we have already defined $A$ and $x$, we're writing it as $\boldsymbol{Q}m=b$
+          \emph{Note:} Systems of linear equations are typically written in the form $\boldsymbol{A}x=b$, but since we have already defined $A$ and $x$, we're writing it as $\boldsymbol{Q}m=b$
 
-\item Our problem is now over-constrained, so we want to find values for $m_{i,j}$ that minimize the squared error between approximated values and real values, or $||\boldsymbol{Q}m-b||_2$. To do this we use singular value decomposition to find the pseudoinverse of $\boldsymbol{Q}$, written as $\boldsymbol{Q}^\dagger$. We then multiply it by both sides, giving us $\boldsymbol{Q}^\dagger \boldsymbol{Q}m = \boldsymbol{Q}^\dagger b \quad\Rightarrow\quad m \approx \boldsymbol{Q}^\dagger b$.
+    \item Our problem is now over-constrained, so we want to find values for $m_{i,j}$ that minimize the squared error between approximated values and real values, or $||\boldsymbol{Q}m-b||_2$. To do this we use singular value decomposition to find the pseudoinverse of $\boldsymbol{Q}$, written as $\boldsymbol{Q}^\dagger$. We then multiply it by both sides, giving us $\boldsymbol{Q}^\dagger \boldsymbol{Q}m = \boldsymbol{Q}^\dagger b \quad\Rightarrow\quad m \approx \boldsymbol{Q}^\dagger b$.
 
-Thankfully, the computer can do all of this for us! \texttt{numpy.linalg.lstsq()} takes in our $\boldsymbol{Q}$ matrix and $b$ vector, and returns approximations for $m$. Plug the values you wrote in part (b) into that function and write the returned $\boldsymbol{M}$ matrix here.
+          Thankfully, the computer can do all of this for us! \texttt{numpy.linalg.lstsq()} takes in our $\boldsymbol{Q}$ matrix and $b$ vector, and returns approximations for $m$. Plug the values you wrote in part (b) into that function and write the returned $\boldsymbol{M}$ matrix here.
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -296,50 +327,50 @@ Thankfully, the computer can do all of this for us! \texttt{numpy.linalg.lstsq()
 
 \begin{enumerate}[(a)]
 
-\item Replace each of the `$\_\_$' below with $x, y, x', y',$ or $0$.
-\begin{align}
-\begin{cases}
-    \_\_m_{1,1} + \_\_m_{1,2} + \_\_m_{2,1} + \_\_m_{2,2} = \_\_ \\
-    \_\_m_{1,1} + \_\_m_{1,2} + \_\_m_{2,1} + \_\_m_{2,2} = \_\_
-\end{cases}
-\end{align}
+    \item Replace each of the `$\_\_$' below with $x, y, x', y',$ or $0$.
+          \begin{align}
+              \begin{cases}
+                  xm_{1,1} + ym_{1,2} + 0m_{2,1} + 0m_{2,2} = x' \\
+                  0m_{1,1} + 0m_{1,2} + xm_{2,1} + ym_{2,2} = y'
+              \end{cases}
+          \end{align}
 
-\item Replace each of the `$\_\_$' below with a $0$ or a coordinate value from $ABCD$ and $A'B'C'D'$.
-\begin{align}
-    \begin{pmatrix} \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_ \\ \_\_ & \_\_ & \_\_ & \_\_\end{pmatrix} *\begin{pmatrix} m_{1,1} \\ m_{1,2} \\ m_{2,1} \\ m_{2,2} \\ \end{pmatrix} = \begin{pmatrix} \_\_ \\ \_\_ \\ \_\_ \\ \_\_ \\ \_\_ \\ \_\_ \\ \_\_ \\ \_\_ \end{pmatrix}
-\end{align}
+    \item Replace each of the `$\_\_$' below with a $0$ or a coordinate value from $ABCD$ and $A'B'C'D'$.
+          \begin{align}
+              \begin{pmatrix} 1 & 1 & 0 & 0 \\ 0 & 0 & 1 & 1 \\ 1.5 & 0.5 & 0 & 0 \\ 0 & 0 & 1.5 & 0.5 \\ 2 & 1 & 0 & 0 \\ 0 & 0 & 2 & 1 \\ 2.5 & 2 & 0 & 0 \\ 0 & 0 & 2.5 & 2\end{pmatrix} *\begin{pmatrix} m_{1,1} \\ m_{1,2} \\ m_{2,1} \\ m_{2,2} \\ \end{pmatrix} = \begin{pmatrix} -0.3 \\ 1.3 \\ 0.5 \\ 1.1 \\ -0.3 \\ 1.8 \\ -0.3 \\ 2.6 \end{pmatrix}
+          \end{align}
 
-\item Replace each of the `$\_\_$' below with the value of $m_{i, j}$.
-\begin{align}
-    M = \begin{pmatrix} m_{1,1} & m_{1,2} \\ m_{2,1} & m_{2,2} \end{pmatrix} = \begin{pmatrix} \_\_ & \_\_ \\ \_\_ & \_\_ \end{pmatrix}
-\end{align}
+    \item Replace each of the `$\_\_$' below with the value of $m_{i, j}$.
+          \begin{align}
+              M = \begin{pmatrix} m_{1,1} & m_{1,2} \\ m_{2,1} & m_{2,2} \end{pmatrix} = \begin{pmatrix} 0.344 & -0.6336 \\ 0.528 & 0.6768 \end{pmatrix}
+          \end{align}
 
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \pagebreak
-\paragraph{Q6:} 
+\paragraph{Q6:}
 In searching for solutions to slow the spread of COVID-19, many governments and organizations have looked to technology, some of which uses cameras and computer vision. Please read these articles on
-\href{https://thenextweb.com/neural/2020/03/21/why-ai-might-be-the-most-effective-weapon-we-have-to-fight-covid-19/}{AI usage during the pandemic} and a \href{https://www.bbc.com/news/technology-51439401}{‘close contact detector’}, and answer the following questions. 
+\href{https://thenextweb.com/neural/2020/03/21/why-ai-might-be-the-most-effective-weapon-we-have-to-fight-covid-19/}{AI usage during the pandemic} and a \href{https://www.bbc.com/news/technology-51439401}{‘close contact detector’}, and answer the following questions.
 \begin{enumerate}[(a)]
 
-    \item 
-    Of the computer vision solutions described, which single solution would you most support and why? 
-    Which one would you least support and why? (3-4 sentences) \\
-    \emph{Note: You may make whichever assumptions you like about how the specific solution might work, but please state them.}
-    
-    \item 
-    Suppose that the `close contact detector' used computer vision as one of its signals, by surreptitiously using your smartphone's cameras along with facial recognition to know who you were near. In a time of crisis, would you be comfortable with this? Why? (3-4 sentences)
+    \item
+          Of the computer vision solutions described, which single solution would you most support and why?
+          Which one would you least support and why? (3-4 sentences) \\
+          \emph{Note: You may make whichever assumptions you like about how the specific solution might work, but please state them.}
+
+    \item
+          Suppose that the `close contact detector' used computer vision as one of its signals, by surreptitiously using your smartphone's cameras along with facial recognition to know who you were near. In a time of crisis, would you be comfortable with this? Why? (3-4 sentences)
 \end{enumerate}
 
-The surveillance and biometric measures that help us today may outlast the pandemic and become part of our daily lives. 
+The surveillance and biometric measures that help us today may outlast the pandemic and become part of our daily lives.
 \begin{enumerate}[(c)]
     \item
-    The computer vision technology behind the `close contact detector' starts to be used by governments to locate missing persons and criminal fugitives through your smartphone, without you knowing. Would you be comfortable with this? Why? (3-4 sentences)
-    
+          The computer vision technology behind the `close contact detector' starts to be used by governments to locate missing persons and criminal fugitives through your smartphone, without you knowing. Would you be comfortable with this? Why? (3-4 sentences)
+
     \item
-    The technology then becomes commercial software, and it is integrated into a new dating app `Cvpid'. Once installed, as you go about your day, the app passively scans people near you and matches their faces to their social media profiles to find potential partners based on your personal preferences. Would you be comfortable with this? Why? (3-4 sentences)
+          The technology then becomes commercial software, and it is integrated into a new dating app `Cvpid'. Once installed, as you go about your day, the app passively scans people near you and matches their faces to their social media profiles to find potential partners based on your personal preferences. Would you be comfortable with this? Why? (3-4 sentences)
 
 \end{enumerate}
 
@@ -347,22 +378,24 @@ The surveillance and biometric measures that help us today may outlast the pande
 \paragraph{A6:} Your answer here.
 % Uncomment the stencil below and fill in your solution.
 
-% \begin{enumerate}[(a)]
+\begin{enumerate}[(a)]
 
-% \item 
+    \item I personally support the solution in tracking the coronavirus outbreak with machine learning the most. Because detecting a potential outbreak and tracking the spread of the disease can help us to minimize the influence of this virus from the very beginning. It is also shown that several days before the statement of WHO, an AI platform is capable to flag the "unuseal pneumonia" cases happending.
 
-% \item 
+          I would least support using computer vision to detect coronavirus infection as such detection would sacrifice the personal privacy or require an extremely high accuracy for real application. For example, detecting the temperature of the crowds, you would take pictures with people unawared.
 
-% \item 
+    \item No, I am not comfortable with this. It means that the app can use my smartphone's camera without my authorization, which poses a risk of compromising my personal privacy. And we don't know at what time the app would define as a time of crisis and use the camera. If it starts at time that is actually safe, the information collected would not be helpful but unsafe.
 
-% \item 
+          %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+          % Please leave the pagebreak
+          \pagebreak
+          \paragraph{A6 (continued):} Your answer here.
 
-% \end{enumerate}
+    \item No, I am not comfortable with this. I don't think that it is appropriate to allow governments collecting our geometric information without our authorization. There is a potential that the information collected can leak out, which means that bad people can obtain our daily routines accurately. And there is also a risk on where should the collected information be stored.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Please leave the pagebreak
-\pagebreak
-\paragraph{A6 (continued):} Your answer here.
+    \item No, I am not comfortable with this. First of all, I don't believe any such softwares that claim they could help people find potential partners. The feelings of human can not be easily explained by algorithms, at least so far. It is a much more complicated thing than image idenfication or other computer vision applications. I would prefer to trust my own feelings rather than the recommondations from softwares.
+
+\end{enumerate}
 
 % If you really need extra space, uncomment here and use extra pages after the last question.
 % Please refer here in your original answer. Thanks!

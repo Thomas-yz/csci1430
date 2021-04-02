@@ -52,6 +52,7 @@
 \usepackage{microtype}
 \usepackage{times}
 \usepackage{booktabs}
+\usepackage{amsmath}
 
 % python code format: https://github.com/olivierverdier/python-latex-highlighting
 \usepackage{pythonhighlight}
@@ -78,89 +79,98 @@
 
 \section*{Instructions}
 \begin{itemize}
-  \item Provide an overview about how your project functions. 
-  \item Describe any interesting decisions you made to write your algorithm.
-  \item Show and discuss the results of your algorithm.
-  \item Feel free to include code snippets, images, and equations.
-  \item List any extra credit implementation and result (optional).
-  \item Use as many pages as you need, but err on the short side.
-  \item \textbf{Please make this document anonymous.}
+    \item Provide an overview about how your project functions.
+    \item Describe any interesting decisions you made to write your algorithm.
+    \item Show and discuss the results of your algorithm.
+    \item Feel free to include code snippets, images, and equations.
+    \item List any extra credit implementation and result (optional).
+    \item Use as many pages as you need, but err on the short side.
+    \item \textbf{Please make this document anonymous.}
 \end{itemize}
 
 \section*{Project Overview}
-
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. See Equation~\ref{eq:one}.
-
-\begin{equation}
-a = b + c
-\label{eq:one}
-\end{equation}
+In this project, we learn how to estimate the camera projection matrix and the fundamental matrix. We use RANSAC to find the best fundamental matrix that gives the most inlier matches between two images. After matching, we reproject the 2D points back to 3D points to show points cloud of the object.
 
 \section*{Implementation Detail}
+The implementation order follows the instructions on the \href{https://browncsci1430.github.io/webpage/proj5_cameras/}{project page}.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\subsection*{Part I: Camera Projection Matrix}
+The implementation details can be checked in \texttt{calculate\_projection\_matrix}. The matrix $A$ is constructed for every point pair of 2D and 3D points as the form shown in Eq. \ref{eq:projection}. Then M matrix is solved using numpy function \texttt{numpy.linalg.lstsq()} and reshaped to (3,4) after appending $m_{34}=1$ in the end.
 
-My code snippet highlights an interesting point.
-\begin{python}
-one = 1;
-two = one + one;
-if two == 2
-    disp( 'This computer is not broken.' );
-end
-\end{python}
+\setcounter{MaxMatrixCols}{20}
+\begin{equation}
+    \begin{pmatrix}
+        X & Y & Z & 1 & 0 & 0 & 0 & 0 & -Xu & -Yu & -Zu \\
+        0 & 0 & 0 & 0 & X & Y & Z & 1 & -Xv & -Yv & -Zv
+    \end{pmatrix}
+    \begin{pmatrix}
+        m_{11} \\ m_{12} \\ m_{13} \\ m_{14} \\ m_{21} \\ m_{22} \\ m_{23} \\ m_{24} \\ m_{31} \\ m_{32} \\ m_{33} \\
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        u \\ v
+    \end{pmatrix}
+    \label{eq:projection}
+\end{equation}
 
+\subsection*{Part II: RANSAC}
+The implementation of RANSAC can be checked in \texttt{ransac\_fundamental\_matrix}. In general, the function iterates \texttt{num\_iterations} to find the best estimated fundamental matrix. For a point correspondence (x', x), \(x'Fx=0\) if the fundamental matrix is perfect. Thus, in each iteration, inlier is counted if the error is smaller than the threshold, which is manually set as 1e-2 here.
+
+\subsection*{Part III: Converting 2D matches to 3D points}
+Similar to Part I, we hardcode matrixes follow the format \(Ax=b\) shown in Eq. \ref{eq:matching} for each point correspondence.
+\begin{equation}
+    \begin{pmatrix}
+        m_{11} - m_{31}u & m_{12} - m_{32}u & m_{13} - m_{33}u \\
+        m_{21} - m_{31}v & m_{22} - m_{32}v & m_{23} - m_{33}v
+    \end{pmatrix}
+    \begin{pmatrix}
+        X \\ Y \\ Z
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+        m_{34}u - m_{14} \\ m_{34}v - m_{24}
+    \end{pmatrix}
+    \label{eq:matching}
+\end{equation}
+
+\subsection*{Part IV: Fundamental Matrix Estimation and Coordinate Normalization}
+The implementation details can be checked in \texttt{estimate\_fundamental\_matrix}. In general, it follows the procedure in slides of 8-points methods. The normalization of coordinates has been implemented as well. However, the autograder said the function failed while it runs normal locally. For the normalization, the mean and standard deviation are calculated before the matrix transformation. The procedure follows instructions in Part V on \href{https://browncsci1430.github.io/webpage/proj5_cameras/}{project page}.
+
+% \newpage
 \section*{Result}
+Result after implementing function \texttt{calculate\_projection\_matrix} of sequences cards.
 
-\begin{enumerate}
-    \item Result 1 was a total failure, because...
-    \item Result 2 (Figure~\ref{fig:result1}, left) was surprising, because...
-    \item Result 3 (Figure~\ref{fig:result1}, right) blew my socks off, because...
-\end{enumerate}
-
-\begin{figure}[h]
+\begin{figure*}[htbp]
     \centering
-    \includegraphics[width=5cm]{placeholder.jpg}
-    \includegraphics[width=5cm]{placeholder.jpg}
-    \caption{\emph{Left:} My result was spectacular. \emph{Right:} Curious.}
-    \label{fig:result1}
-\end{figure}
+    \includegraphics[width=\linewidth]{calculate_projection_matrix.png}
+\end{figure*}
 
-My results are summarized in Table~\ref{tab:table1}.
+Result after implementing function \texttt{ransac\_fundamental\_matrix} for images 1 and 2 of sequences of cards.
 
-\begin{table}[h]
+\begin{figure*}[htbp]
     \centering
-    \begin{tabular}{lr}
-        \toprule
-        Condition & Time (seconds) \\
-        \midrule
-        Test 1 & 1 \\
-        Test 2 & 1000 \\
-        \bottomrule
-    \end{tabular}
-    \caption{Stunning revelation about the efficiency of my code.}
-    \label{tab:table1}
-\end{table}
+    \includegraphics[width=0.8\linewidth]{ransac.png}
+\end{figure*}
 
-\section*{Extra Credit (Optional)}
-\begin{enumerate}
-   
-    \item Implementation A, code snippets, and results
-        \begin{python}
-        one = 1;
-        two = one + one;
-        if two == 2
-            disp( 'This computer is not broken.' );
-        end
-        \end{python}
-    
-    \item Implementation B, code snippets, and results
-        \begin{python}
-        one = 1;
-        two = one + one;
-        if two == 2
-            disp( 'This computer is not broken.' );
-        end
-        \end{python}
-\end{enumerate}
+Show us an image of a 3D reconstruction of one of the sequences (mike and ikes, cards, or dollars). Discuss your observations of the effect of any remaining incorrect matches.
+
+Below Left is the 3D reconstruction of cards. We could find that there are many mismatches in left side. By checking all the intermediate figures showing matches in 2D, we found that the markers can lead to many mismatches. As markers are rigidly placed across the images in certain direction, it might can partially explained why so many mismatch in one direction.
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.49\linewidth]{cards.png}
+    \includegraphics[width=0.49\linewidth]{mismatch.png}
+\end{figure*}
+
+
+\newpage
+Write about your thoughts on how well RANSAC does. How does the number of iterations affect the output?
+
+From the figure below, we could see that the number of iterations will affect the final number of matches in 3D spaces. Fewer number of iterations might not be able to find the best estimated fundamental matrix and thus, cannot find so many matches.
+\begin{figure*}[htbp]
+    \centering
+    \includegraphics[width=0.49\linewidth]{iter1.png}
+    \includegraphics[width=0.49\linewidth]{iter100.png}
+    \caption{\emph{Left}: the number of iteration in RANSAC is 1. \emph{Right}: the number of iteration in RANSAC is 100.}
+\end{figure*}
 
 \end{document}
